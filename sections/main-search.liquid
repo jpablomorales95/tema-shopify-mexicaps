@@ -1,0 +1,228 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Search Page — Replaces Dawn's main-search.liquid
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{{ 'component-search.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+<script src="{{ 'main-search.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'search-form.js' | asset_url }}" defer="defer"></script>
+
+<section class="drift-search" data-section-type="drift-search">
+  <span class="drift-search__container drift-container">
+    <span class="drift-search__stack">
+
+      {%- comment -%} Search input card {%- endcomment -%}
+      <span class="drift-search__input-card drift-glass">
+
+        {%- if settings.predictive_search_enabled -%}
+          <predictive-search data-loading-text="{{ 'accessibility.loading' | t }}">
+        {%- endif -%}
+
+        <main-search>
+          <form action="{{ routes.search_url }}" method="get" role="search" class="search drift-search__form">
+            <span class="field drift-search__field">
+              <input
+                class="search__input field__input drift-search__input"
+                id="Search-In-Template"
+                type="search"
+                name="q"
+                value="{{ search.terms | escape }}"
+                placeholder="Search products, collections..."
+                {%- if settings.predictive_search_enabled -%}
+                  role="combobox"
+                  aria-expanded="false"
+                  aria-owns="predictive-search-results"
+                  aria-controls="predictive-search-results"
+                  aria-haspopup="listbox"
+                  aria-autocomplete="list"
+                  autocorrect="off"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                {%- endif -%}
+              >
+              <label class="field__label visually-hidden" for="Search-In-Template">{{ 'general.search.search' | t }}</label>
+              <input name="options[prefix]" type="hidden" value="last">
+
+              {%- if settings.predictive_search_enabled -%}
+                <span class="predictive-search predictive-search--search-template" tabindex="-1" data-predictive-search>
+                  {%- render 'loading-spinner', class: 'predictive-search__loading-state' -%}
+                </span>
+                <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span>
+              {%- endif -%}
+
+              <button
+                type="reset"
+                class="reset__button field__button drift-search__action-btn{% if search.terms == blank %} hidden{% endif %}"
+                aria-label="{{ 'general.search.reset' | t }}"
+                style="display:none!important"
+              >
+              </button>
+              <button type="button" class="drift-search__action-btn drift-search__toggle" aria-label="Search">
+                <svg class="drift-search__icon-search" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <svg class="drift-search__icon-x" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </span>
+          </form>
+        </main-search>
+
+        {%- if settings.predictive_search_enabled -%}
+          </predictive-search>
+        {%- endif -%}
+      </span>
+
+      {%- if search.performed -%}
+
+        {%- if search.results_count > 0 -%}
+
+          {%- comment -%} Results card {%- endcomment -%}
+          {% paginate search.results by 20 %}
+            <span class="drift-search__results-card drift-glass">
+              <span class="drift-search__results-header">
+                <span class="drift-search__results-count">
+                  {{ search.results_count }} {{ search.results_count | pluralize: 'result', 'results' }} for "{{ search.terms | escape }}"
+                </span>
+              </span>
+
+              <span class="drift-cart__sep"></span>
+
+              <span class="drift-search__results">
+                {%- for item in search.results -%}
+                  <a href="{{ item.url }}" class="drift-search__result">
+                    {%- liquid
+                      assign result_image = item.featured_image | default: item.image
+                    -%}
+                    {%- if result_image -%}
+                      <span class="drift-search__result-img-wrap">
+                        <img
+                          class="drift-search__result-img"
+                          src="{{ result_image | image_url: width: 160 }}"
+                          alt="{{ result_image.alt | default: item.title | escape }}"
+                          loading="lazy"
+                          width="80"
+                          height="80"
+                        >
+                      </span>
+                    {%- else -%}
+                      <span class="drift-search__result-img-wrap drift-search__result-img-wrap--empty"></span>
+                    {%- endif -%}
+
+                    <span class="drift-search__result-details">
+                      <span class="drift-search__result-title">{{ item.title | escape }}</span>
+                      <span class="drift-search__result-type">
+                        {%- case item.object_type -%}
+                          {%- when 'product' -%}
+                            {{ item.price | money }}
+                          {%- when 'article' -%}
+                            Article
+                          {%- when 'page' -%}
+                            Page
+                        {%- endcase -%}
+                      </span>
+                    </span>
+                  </a>
+                  {%- unless forloop.last -%}
+                    <span class="drift-cart__sep"></span>
+                  {%- endunless -%}
+                {%- endfor -%}
+              </span>
+
+              {%- if paginate.pages > 1 -%}
+                <span class="drift-cart__sep"></span>
+                <span class="drift-search__pagination">
+                  {%- if paginate.previous -%}
+                    <a href="{{ paginate.previous.url }}" class="drift-btn drift-btn--ghost drift-search__page-btn">
+                      ← Previous
+                    </a>
+                  {%- endif -%}
+                  <span class="drift-search__page-info">
+                    Page {{ paginate.current_page }} of {{ paginate.pages }}
+                  </span>
+                  {%- if paginate.next -%}
+                    <a href="{{ paginate.next.url }}" class="drift-btn drift-btn--ghost drift-search__page-btn">
+                      Next →
+                    </a>
+                  {%- endif -%}
+                </span>
+              {%- endif -%}
+            </span>
+          {% endpaginate %}
+
+        {%- else -%}
+
+          {%- comment -%} No results {%- endcomment -%}
+          <span class="drift-search__empty-card drift-glass">
+            <span class="drift-search__empty-text">No results for "{{ search.terms | escape }}"</span>
+            <span class="drift-search__empty-hint">Try a different search term or browse our products.</span>
+            <a href="{{ routes.all_products_collection_url }}" class="drift-btn drift-btn--primary">
+              Browse Products
+            </a>
+          </span>
+
+        {%- endif -%}
+
+      {%- endif -%}
+
+    </span>
+  </span>
+</section>
+
+<script>
+(function () {
+  'use strict';
+  var section = document.querySelector('[data-section-type="drift-search"]');
+  if (!section) return;
+
+  var input = section.querySelector('.drift-search__input');
+  var toggle = section.querySelector('.drift-search__toggle');
+  var iconSearch = toggle ? toggle.querySelector('.drift-search__icon-search') : null;
+  var iconX = toggle ? toggle.querySelector('.drift-search__icon-x') : null;
+  var form = section.querySelector('.drift-search__form');
+  var resetBtn = section.querySelector('.reset__button');
+
+  function updateIcon() {
+    if (!iconSearch || !iconX) return;
+    var hasValue = input && input.value.trim().length > 0;
+    iconSearch.style.display = hasValue ? 'none' : 'block';
+    iconX.style.display = hasValue ? 'block' : 'none';
+  }
+
+  if (input) {
+    input.addEventListener('input', updateIcon);
+    updateIcon();
+  }
+
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      if (input && input.value.trim().length > 0) {
+        input.value = '';
+        if (resetBtn) resetBtn.click();
+        updateIcon();
+        input.focus();
+      } else if (form) {
+        form.submit();
+      }
+    });
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.main-search.name",
+  "tag": "section",
+  "class": "drift-search-section",
+  "settings": []
+}
+{% endschema %}

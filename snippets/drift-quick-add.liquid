@@ -1,0 +1,104 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Quick-Add Overlay — Mini PDP (V3)
+  Rendered once per page, populated by JS
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<span
+  class="drift-qa"
+  data-quick-add
+  data-qa-layout="grid"
+  role="dialog"
+  aria-label="Quick add to cart"
+  aria-hidden="true"
+>
+  {%- comment -%} Backdrop — desktop only, hidden on mobile via CSS {%- endcomment -%}
+  <span class="drift-qa__backdrop" data-qa-backdrop></span>
+
+  {%- comment -%} ════════ Modal — no drift-glass (desktop gets its own blur, mobile uses dark overlay) ════════ {%- endcomment -%}
+  <span class="drift-qa__modal" data-qa-modal>
+
+    {%- comment -%} Image — hidden via CSS {%- endcomment -%}
+    <span class="drift-qa__image-wrap" data-qa-image-wrap>
+      <img class="drift-qa__image" data-qa-image src="" alt="" draggable="false">
+    </span>
+
+    {%- comment -%} Info panel — right side on desktop, bottom sheet on mobile {%- endcomment -%}
+    <span class="drift-qa__info drift-glass" data-qa-info>
+
+      {%- comment -%} Mobile drag handle {%- endcomment -%}
+      <span class="drift-qa__handle" data-qa-handle>
+        <span class="drift-qa__handle-bar"></span>
+      </span>
+
+      <span class="drift-qa__title" data-qa-title></span>
+
+      {%- comment -%} Description — JS populates, mobile toggle {%- endcomment -%}
+      <span class="drift-qa__description" data-qa-description></span>
+      <button class="drift-qa__description-toggle" data-qa-description-toggle type="button" hidden>
+        <span data-qa-description-toggle-text>Show More</span>
+      </button>
+
+      {%- comment -%} Variants — JS builds option buttons here {%- endcomment -%}
+      <span class="drift-qa__variants" data-qa-variants></span>
+
+      {%- comment -%} Size chart trigger — JS shows if metafield exists {%- endcomment -%}
+      <button class="drift-qa__size-chart-trigger" data-qa-size-chart-open type="button" hidden>
+        Size Chart
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
+
+      {%- comment -%} ATC area {%- endcomment -%}
+      <span class="drift-qa__atc-wrap" data-qa-atc-wrap>
+
+        {%- comment -%} Select Options — shown for variant products before selection {%- endcomment -%}
+        <button
+          type="button"
+          class="drift-btn drift-btn--primary drift-qa__atc drift-qa__atc--select"
+          data-qa-select-options
+          hidden
+        >
+          <span class="drift-qa__atc-text">Select Options</span>
+          <span class="drift-qa__atc-price" data-qa-select-price></span>
+        </button>
+
+        {%- comment -%} Add to Cart — shown after variant selected or for single-variant {%- endcomment -%}
+        <button
+          type="button"
+          class="drift-btn drift-btn--primary drift-qa__atc drift-qa__atc--submit"
+          data-qa-atc
+          hidden
+        >
+          <span class="drift-qa__atc-text" data-qa-atc-text>Add to Cart</span>
+          <span class="drift-qa__atc-price" data-qa-price></span>
+        </button>
+      </span>
+
+      {%- comment -%} View full details link {%- endcomment -%}
+      <a href="" class="drift-qa__view-full" data-qa-view-full>View Full Details</a>
+
+    </span>
+  </span>
+</span>
+
+{%- comment -%} Size chart modal — reused from PDP pattern {%- endcomment -%}
+<span class="drift-qa__size-chart" data-qa-size-chart>
+  <span class="drift-qa__size-chart-backdrop" data-qa-size-chart-close></span>
+  <span class="drift-qa__size-chart-card drift-glass" data-qa-size-chart-card>
+    <span class="drift-qa__size-chart-header">
+      <span class="drift-qa__size-chart-title">Size Chart</span>
+      <button class="drift-icon-btn" data-qa-size-chart-close type="button" aria-label="Close size chart">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </span>
+    <span class="drift-qa__size-chart-body">
+      <img class="drift-qa__size-chart-img" data-qa-size-chart-img src="" alt="" loading="lazy" draggable="false">
+    </span>
+  </span>
+</span>

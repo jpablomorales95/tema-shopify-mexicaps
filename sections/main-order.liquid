@@ -1,0 +1,134 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Customer Order — Replaces Dawn's main-order.liquid
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-customer" data-section-type="drift-customer-order">
+  <span class="drift-customer__container drift-container">
+    <span class="drift-customer__stack drift-customer__stack--wide">
+
+      <span class="drift-customer__title-card drift-glass">
+        <span class="drift-customer__title">{{ 'customer.order.title' | t: name: order.name }}</span>
+        <a href="{{ routes.account_url }}" class="drift-customer__title-action">
+          {{ 'customer.account.return' | t }}
+        </a>
+      </span>
+
+      {%- comment -%} Order info {%- endcomment -%}
+      <span class="drift-customer__card drift-glass">
+        <span class="drift-customer__subtitle">
+          {%- assign order_date = order.created_at | time_tag: format: 'date_at_time' -%}
+          {{ 'customer.order.date_html' | t: date: order_date }}
+        </span>
+
+        {%- if order.cancelled -%}
+          <span class="drift-customer__error">
+            {%- assign cancelled_at = order.cancelled_at | time_tag: format: 'date_at_time' -%}
+            {{ 'customer.order.cancelled_html' | t: date: cancelled_at }}
+            — {{ 'customer.order.cancelled_reason' | t: reason: order.cancel_reason_label }}
+          </span>
+        {%- endif -%}
+
+        {%- comment -%} Line items {%- endcomment -%}
+        <table class="drift-customer__table" role="table">
+          <thead>
+            <tr>
+              <th>{{ 'customer.order.product' | t }}</th>
+              <th>{{ 'customer.order.sku' | t }}</th>
+              <th>{{ 'customer.order.price' | t }}</th>
+              <th>{{ 'customer.order.quantity' | t }}</th>
+              <th>{{ 'customer.order.total' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%- for line_item in order.line_items -%}
+              <tr>
+                <td data-label="{{ 'customer.order.product' | t }}">
+                  {%- if line_item.url != blank -%}
+                    <a href="{{ line_item.url }}">{{ line_item.title | escape }}</a>
+                  {%- else -%}
+                    {{ line_item.title | escape }}
+                  {%- endif -%}
+                  {%- unless line_item.product.has_only_default_variant -%}
+                    <br><span style="color:var(--drift-text-muted);font-size:var(--drift-text-xs)">{{ line_item.variant.title | escape }}</span>
+                  {%- endunless -%}
+                </td>
+                <td data-label="{{ 'customer.order.sku' | t }}">{{ line_item.sku }}</td>
+                <td data-label="{{ 'customer.order.price' | t }}">{{ line_item.final_price | money }}</td>
+                <td data-label="{{ 'customer.order.quantity' | t }}">{{ line_item.quantity }}</td>
+                <td data-label="{{ 'customer.order.total' | t }}">{{ line_item.final_line_price | money }}</td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+
+        <span class="drift-cart__sep"></span>
+
+        {%- comment -%} Totals {%- endcomment -%}
+        <span class="drift-customer__totals">
+          <span class="drift-customer__totals-row">
+            <span class="drift-customer__totals-label">{{ 'customer.order.subtotal' | t }}</span>
+            <span class="drift-customer__totals-value">{{ order.line_items_subtotal_price | money }}</span>
+          </span>
+
+          {%- for shipping_method in order.shipping_methods -%}
+            <span class="drift-customer__totals-row">
+              <span class="drift-customer__totals-label">{{ 'customer.order.shipping' | t }} ({{ shipping_method.title | escape }})</span>
+              <span class="drift-customer__totals-value">{{ shipping_method.price | money }}</span>
+            </span>
+          {%- endfor -%}
+
+          {%- for tax_line in order.tax_lines -%}
+            <span class="drift-customer__totals-row">
+              <span class="drift-customer__totals-label">{{ 'customer.order.tax' | t }} ({{ tax_line.title | escape }} {{ tax_line.rate | times: 100 }}%)</span>
+              <span class="drift-customer__totals-value">{{ tax_line.price | money }}</span>
+            </span>
+          {%- endfor -%}
+
+          {%- if order.total_refunded_amount > 0 -%}
+            <span class="drift-customer__totals-row">
+              <span class="drift-customer__totals-label">{{ 'customer.order.total_refunded' | t }}</span>
+              <span class="drift-customer__totals-value">-{{ order.total_refunded_amount | money_with_currency }}</span>
+            </span>
+          {%- endif -%}
+
+          <span class="drift-customer__totals-row drift-customer__totals-row--total">
+            <span class="drift-customer__totals-label">{{ 'customer.order.total' | t }}</span>
+            <span class="drift-customer__totals-value">{{ order.total_net_amount | money_with_currency }}</span>
+          </span>
+        </span>
+      </span>
+
+      {%- comment -%} Addresses {%- endcomment -%}
+      <span class="drift-customer__card drift-glass">
+        <span class="drift-customer__addresses">
+          <span class="drift-customer__address-block">
+            <span class="drift-customer__address-heading">{{ 'customer.order.billing_address' | t }}</span>
+            <span class="drift-customer__address-status">
+              {{ 'customer.order.payment_status' | t }}: {{ order.financial_status_label }}
+            </span>
+            {{ order.billing_address | format_address }}
+          </span>
+          <span class="drift-customer__address-block">
+            <span class="drift-customer__address-heading">{{ 'customer.order.shipping_address' | t }}</span>
+            <span class="drift-customer__address-status">
+              {{ 'customer.order.fulfillment_status' | t }}: {{ order.fulfillment_status_label }}
+            </span>
+            {{ order.shipping_address | format_address }}
+          </span>
+        </span>
+      </span>
+
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main-order.name",
+  "settings": []
+}
+{% endschema %}

@@ -1,0 +1,178 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  DRIFT Contact — Glass Form
+  https://webexp.dev
+  YouTube: @WEBEXP | Instagram: @webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign heading = section.settings.heading
+  assign subject_options = section.settings.subject_options | split: ','
+  assign btn_text = section.settings.button_text
+  assign success_msg = section.settings.success_message
+-%}
+
+<section
+  class="drift-contact"
+  data-section-id="{{ section.id }}"
+  data-section-type="drift-contact"
+>
+  <span class="drift-contact__container drift-container">
+    <span class="drift-contact__card drift-glass">
+
+      {%- if heading != blank -%}
+        <span class="drift-contact__header">
+          <h1 class="drift-contact__heading">{{ heading | escape }}</h1>
+        </span>
+      {%- endif -%}
+
+      {%- form 'contact', class: 'drift-contact__form' -%}
+
+        {%- comment -%} Success message {%- endcomment -%}
+        {%- if form.posted_successfully? -%}
+          <span class="drift-contact__success" role="status">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <p>{{ success_msg | escape }}</p>
+          </span>
+        {%- endif -%}
+
+        {%- comment -%} Error display {%- endcomment -%}
+        {%- if form.errors -%}
+          <span class="drift-contact__errors" role="alert">
+            <p class="drift-contact__error-heading">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Please fix the following:
+            </p>
+            <ul class="drift-contact__error-list">
+              {%- for field in form.errors -%}
+                <li>{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}</li>
+              {%- endfor -%}
+            </ul>
+          </span>
+        {%- endif -%}
+
+        {%- comment -%} Email {%- endcomment -%}
+        <span class="drift-contact__field">
+          <label for="contact-email-{{ section.id }}" class="drift-contact__label">Email</label>
+          <input
+            type="email"
+            id="contact-email-{{ section.id }}"
+            name="contact[email]"
+            class="drift-contact__input"
+            autocomplete="email"
+            required
+            placeholder=" "
+            value="{{ form.email }}"
+          >
+        </span>
+
+        {%- comment -%} Order Number (optional) {%- endcomment -%}
+        <span class="drift-contact__field">
+          <label for="contact-order-{{ section.id }}" class="drift-contact__label">Order Number</label>
+          <input
+            type="text"
+            id="contact-order-{{ section.id }}"
+            name="contact[order_number]"
+            class="drift-contact__input"
+            placeholder=" "
+          >
+        </span>
+
+        {%- comment -%} Subject dropdown {%- endcomment -%}
+        {%- if subject_options.size > 0 -%}
+          <span class="drift-contact__field">
+            <label for="contact-subject-{{ section.id }}" class="drift-contact__label">Subject</label>
+            <span class="drift-contact__select-wrap">
+              <select
+                id="contact-subject-{{ section.id }}"
+                name="contact[inquiry_type]"
+                class="drift-contact__select"
+                required
+              >
+                <option value="" disabled selected>Select a subject</option>
+                {%- for option in subject_options -%}
+                  {%- assign trimmed = option | strip -%}
+                  <option value="{{ trimmed | escape }}">{{ trimmed | escape }}</option>
+                {%- endfor -%}
+              </select>
+              <svg class="drift-contact__select-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </span>
+          </span>
+        {%- endif -%}
+
+        {%- comment -%} Message {%- endcomment -%}
+        <span class="drift-contact__field">
+          <label for="contact-message-{{ section.id }}" class="drift-contact__label">Message</label>
+          <textarea
+            id="contact-message-{{ section.id }}"
+            name="contact[body]"
+            class="drift-contact__textarea"
+            rows="5"
+            required
+            placeholder=" "
+          >{{ form.body }}</textarea>
+        </span>
+
+        {%- comment -%} Submit {%- endcomment -%}
+        <button type="submit" class="drift-btn drift-btn--primary drift-contact__submit">
+          {{ btn_text | escape }}
+        </button>
+
+      {%- endform -%}
+
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "DRIFT Contact",
+  "tag": "section",
+  "class": "drift-contact-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Contact"
+    },
+    {
+      "type": "text",
+      "id": "subject_options",
+      "label": "Subject options",
+      "default": "General Inquiry, Order Support, Wholesale, Collaboration, Other",
+      "info": "Comma-separated list of subject options for the dropdown."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Send Message"
+    },
+    {
+      "type": "textarea",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks for reaching out. We'll get back to you soon."
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Contact"
+    }
+  ]
+}
+{% endschema %}

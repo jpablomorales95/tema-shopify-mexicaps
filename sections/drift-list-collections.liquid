@@ -1,0 +1,315 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  List Collections — Vertical Swipe Feed
+  Reuses drift-feed markup + drift-feed.js
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign hover_effect = section.settings.hover_effect | default: 'grow'
+  assign indicator = section.settings.indicator_type
+  assign show_title = section.settings.show_title
+  assign show_count = section.settings.show_product_count
+
+  comment
+    Build collection array — either from blocks (curated) or all collections
+  endcomment
+
+  assign use_blocks = false
+  if section.blocks.size > 0
+    assign use_blocks = true
+  endif
+
+  assign total = 0
+  if use_blocks
+    assign total = section.blocks.size
+  else
+    assign total = collections.size
+  endif
+-%}
+
+{%- if total > 0 -%}
+  <div
+    class="drift-feed"
+    data-section-id="{{ section.id }}"
+    data-section-type="drift-feed"
+    data-feed-total="{{ total }}"
+    data-feed-hover="{{ hover_effect }}"
+    aria-label="Collections feed — swipe or scroll to browse"
+  >
+    <div class="drift-feed__track" data-feed-track>
+
+      <span class="drift-feed__spacer drift-feed__spacer--top" data-feed-spacer="top" aria-hidden="true"></span>
+
+      {%- if use_blocks -%}
+        {%- comment -%} Curated: merchant picks collections via blocks {%- endcomment -%}
+        {%- for block in section.blocks -%}
+          {%- assign col = block.settings.collection -%}
+          {%- if col != blank -%}
+            <a
+              href="{{ col.url }}"
+              class="drift-feed__slide"
+              data-feed-slide="{{ forloop.index0 }}"
+              aria-label="{{ col.title | escape }}"
+              {{ block.shopify_attributes }}
+            >
+              {%- if col.image != blank -%}
+                <img
+                  src="{{ col.image | image_url: width: 1200 }}"
+                  srcset="
+                    {{ col.image | image_url: width: 600 }} 600w,
+                    {{ col.image | image_url: width: 900 }} 900w,
+                    {{ col.image | image_url: width: 1200 }} 1200w,
+                    {{ col.image | image_url: width: 1800 }} 1800w
+                  "
+                  sizes="100vw"
+                  alt="{{ col.image.alt | default: col.title | escape }}"
+                  width="{{ col.image.width }}"
+                  height="{{ col.image.height }}"
+                  class="drift-feed__image"
+                  {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                  draggable="false"
+                >
+              {%- elsif col.products.first and col.products.first.featured_image != blank -%}
+                {%- assign fallback_img = col.products.first.featured_image -%}
+                <img
+                  src="{{ fallback_img | image_url: width: 1200 }}"
+                  srcset="
+                    {{ fallback_img | image_url: width: 600 }} 600w,
+                    {{ fallback_img | image_url: width: 900 }} 900w,
+                    {{ fallback_img | image_url: width: 1200 }} 1200w,
+                    {{ fallback_img | image_url: width: 1800 }} 1800w
+                  "
+                  sizes="100vw"
+                  alt="{{ col.title | escape }}"
+                  width="{{ fallback_img.width }}"
+                  height="{{ fallback_img.height }}"
+                  class="drift-feed__image"
+                  {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                  draggable="false"
+                >
+              {%- else -%}
+                <span class="drift-feed__placeholder">
+                  {{ col.title | escape }}
+                </span>
+              {%- endif -%}
+
+              {%- if show_title or show_count -%}
+                <span class="drift-feed__info" data-feed-info>
+                  {%- if show_title -%}
+                    <span class="drift-feed__title" data-feed-title>{{ col.title | escape }}</span>
+                  {%- endif -%}
+                  {%- if show_count -%}
+                    <span class="drift-feed__price" data-feed-price>
+                      <span>{{ col.all_products_count }} {{ col.all_products_count | pluralize: 'product', 'products' }}</span>
+                    </span>
+                  {%- endif -%}
+                </span>
+              {%- endif -%}
+            </a>
+          {%- else -%}
+            {%- comment -%} Empty block placeholder {%- endcomment -%}
+            <span
+              class="drift-feed__slide"
+              data-feed-slide="{{ forloop.index0 }}"
+              {{ block.shopify_attributes }}
+            >
+              <span class="drift-feed__placeholder">
+                Add a collection
+              </span>
+            </span>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%- comment -%} Auto: loop all collections {%- endcomment -%}
+        {%- for col in collections -%}
+          <a
+            href="{{ col.url }}"
+            class="drift-feed__slide"
+            data-feed-slide="{{ forloop.index0 }}"
+            aria-label="{{ col.title | escape }}"
+          >
+            {%- if col.image != blank -%}
+              <img
+                src="{{ col.image | image_url: width: 1200 }}"
+                srcset="
+                  {{ col.image | image_url: width: 600 }} 600w,
+                  {{ col.image | image_url: width: 900 }} 900w,
+                  {{ col.image | image_url: width: 1200 }} 1200w,
+                  {{ col.image | image_url: width: 1800 }} 1800w
+                "
+                sizes="100vw"
+                alt="{{ col.image.alt | default: col.title | escape }}"
+                width="{{ col.image.width }}"
+                height="{{ col.image.height }}"
+                class="drift-feed__image"
+                {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                draggable="false"
+              >
+            {%- elsif col.products.first and col.products.first.featured_image != blank -%}
+              {%- assign fallback_img = col.products.first.featured_image -%}
+              <img
+                src="{{ fallback_img | image_url: width: 1200 }}"
+                srcset="
+                  {{ fallback_img | image_url: width: 600 }} 600w,
+                  {{ fallback_img | image_url: width: 900 }} 900w,
+                  {{ fallback_img | image_url: width: 1200 }} 1200w,
+                  {{ fallback_img | image_url: width: 1800 }} 1800w
+                "
+                sizes="100vw"
+                alt="{{ col.title | escape }}"
+                width="{{ fallback_img.width }}"
+                height="{{ fallback_img.height }}"
+                class="drift-feed__image"
+                {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                draggable="false"
+              >
+            {%- else -%}
+              <span class="drift-feed__placeholder">
+                {{ col.title | escape }}
+              </span>
+            {%- endif -%}
+
+            {%- if show_title or show_count -%}
+              <span class="drift-feed__info" data-feed-info>
+                {%- if show_title -%}
+                  <span class="drift-feed__title" data-feed-title>{{ col.title | escape }}</span>
+                {%- endif -%}
+                {%- if show_count -%}
+                  <span class="drift-feed__price" data-feed-price>
+                    <span>{{ col.all_products_count }} {{ col.all_products_count | pluralize: 'product', 'products' }}</span>
+                  </span>
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+          </a>
+        {%- endfor -%}
+      {%- endif -%}
+
+      <span class="drift-feed__spacer drift-feed__spacer--bottom" data-feed-spacer="bottom" aria-hidden="true"></span>
+
+    </div>
+
+    {%- comment -%} Indicator — Dots {%- endcomment -%}
+    {%- if indicator == 'dots' -%}
+      <span class="drift-feed__indicator drift-feed__indicator--dots" data-feed-indicator="dots" aria-hidden="true">
+        {%- if use_blocks -%}
+          {%- for block in section.blocks -%}
+            <button
+              class="drift-feed__dot{% if forloop.first %} is-active{% endif %}"
+              data-feed-dot="{{ forloop.index0 }}"
+              type="button"
+              aria-label="Go to collection {{ forloop.index }}"
+            ></button>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for col in collections -%}
+            <button
+              class="drift-feed__dot{% if forloop.first %} is-active{% endif %}"
+              data-feed-dot="{{ forloop.index0 }}"
+              type="button"
+              aria-label="Go to collection {{ forloop.index }}"
+            ></button>
+          {%- endfor -%}
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+
+    {%- comment -%} Indicator — Numbers {%- endcomment -%}
+    {%- if indicator == 'numbers' -%}
+      <span class="drift-feed__indicator drift-feed__indicator--numbers drift-glass drift-glass--subtle" data-feed-indicator="numbers">
+        <span data-feed-current>{% if total >= 10 %}01{% else %}1{% endif %}</span>
+        <span class="drift-feed__counter-sep"></span>
+        <span data-feed-total>{% if total >= 10 %}{{ total | prepend: '00' | slice: -2, 2 }}{% else %}{{ total }}{% endif %}</span>
+      </span>
+    {%- endif -%}
+
+  </div>
+{%- else -%}
+  <div class="drift-feed drift-feed--empty">
+    <div class="drift-container">
+      <p class="drift-muted" style="text-align: center; padding: var(--drift-space-8) 0;">
+        No collections found.
+      </p>
+    </div>
+  </div>
+{%- endif -%}
+
+<script src="{{ 'drift-feed.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "DRIFT Collections",
+  "tag": "section",
+  "class": "drift-feed-section",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show collection title",
+      "default": true,
+      "info": "Display collection title below each image."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_count",
+      "label": "Show product count",
+      "default": false,
+      "info": "Display the number of products below the title."
+    },
+    {
+      "type": "select",
+      "id": "hover_effect",
+      "label": "Hover effect",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "grow", "label": "Grow" },
+        { "value": "glow", "label": "Glow" }
+      ],
+      "default": "grow",
+      "info": "Hover effect on the active collection image."
+    },
+    {
+      "type": "select",
+      "id": "indicator_type",
+      "label": "Progress indicator",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "dots", "label": "Dots" },
+        { "value": "numbers", "label": "Numbers" }
+      ],
+      "default": "numbers",
+      "info": "Show a progress indicator on the left side."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Collections",
+      "blocks": [
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,435 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "DRIFT Studio",
+    "theme_author": "WEBEXP",
+    "theme_version": "3.5.20",
+    "theme_documentation_url": "https://docs.webexp.dev",
+    "theme_support_url": "https://webexp.dev/pages/contact"
+  },
+  {
+    "name": "WEBEXP INFO",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.information.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.tutorials.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.tutorials_info.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.documentation.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.documentation_info.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.shop.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.shop_info.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.contact_us.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.contact_us_info.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.feedback.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.feedback_info.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.review.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.review_info.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.hire_us.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.hire_us_info.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.license.content"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.webexp_info.settings.license_info.content"
+      }
+    ]
+  },
+  {
+    "name": "DRIFT \u2014 General",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Color Mode"
+      },
+      {
+        "type": "select",
+        "id": "drift_default_mode",
+        "label": "Default color mode",
+        "info": "The color mode the site loads in. Shoppers can toggle between light and dark using the header switch.",
+        "options": [
+          {
+            "value": "light",
+            "label": "Light"
+          },
+          {
+            "value": "dark",
+            "label": "Dark"
+          }
+        ],
+        "default": "dark"
+      },
+      {
+        "type": "paragraph",
+        "content": "DRIFT uses its own light/dark mode system \u2014 the color schemes below are required by Shopify but do not affect this theme's appearance."
+      },
+      {
+        "type": "color_scheme_group",
+        "id": "color_schemes",
+        "definition": [
+          {
+            "type": "color",
+            "id": "background",
+            "label": "Background",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color_background",
+            "id": "background_gradient",
+            "label": "Background gradient"
+          },
+          {
+            "type": "color",
+            "id": "text",
+            "label": "Text",
+            "default": "#121212"
+          },
+          {
+            "type": "color",
+            "id": "button",
+            "label": "Button background",
+            "default": "#121212"
+          },
+          {
+            "type": "color",
+            "id": "button_label",
+            "label": "Button label",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_label",
+            "label": "Secondary button label",
+            "default": "#121212"
+          },
+          {
+            "type": "color",
+            "id": "shadow",
+            "label": "Shadow",
+            "default": "#121212"
+          }
+        ],
+        "role": {
+          "text": "text",
+          "background": {
+            "solid": "background",
+            "gradient": "background_gradient"
+          },
+          "links": "secondary_button_label",
+          "icons": "text",
+          "primary_button": "button",
+          "on_primary_button": "button_label",
+          "primary_button_border": "button",
+          "secondary_button": "background",
+          "on_secondary_button": "secondary_button_label",
+          "secondary_button_border": "secondary_button_label"
+        }
+      }
+    ]
+  },
+  {
+    "name": "DRIFT \u2014 Background",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "V3 feature: Replace the solid color background with an image or video. When disabled, DRIFT uses solid backgrounds (light: #FAFAFA, dark: #0A0A0A)."
+      },
+      {
+        "type": "checkbox",
+        "id": "drift_bg_enabled",
+        "label": "Enable image/video background",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Media"
+      },
+      {
+        "type": "image_picker",
+        "id": "drift_bg_image",
+        "label": "Background image",
+        "info": "Used for both modes. If a dark mode image is also uploaded, this becomes the light mode image."
+      },
+      {
+        "type": "image_picker",
+        "id": "drift_bg_image_dark",
+        "label": "Dark mode image (optional)",
+        "info": "Overrides the background image when the site is in dark mode. Leave empty to use one image for both modes."
+      },
+      {
+        "type": "text",
+        "id": "drift_bg_video",
+        "label": "Video URL",
+        "info": "Direct link to an MP4 file. Upload to Shopify Files and paste the URL here. Autoplays muted and loops. Images display on top of video when both are set."
+      },
+      {
+        "type": "header",
+        "content": "Adjustments"
+      },
+      {
+        "type": "range",
+        "id": "drift_bg_blur",
+        "label": "Background blur",
+        "info": "Blurs the background media so site content stays the focus.",
+        "min": 0,
+        "max": 20,
+        "step": 1,
+        "default": 0,
+        "unit": "px"
+      },
+      {
+        "type": "checkbox",
+        "id": "drift_bg_invert",
+        "label": "Invert media in dark mode",
+        "default": false,
+        "info": "Inverts the colors of the background image/video when the site is in dark mode. Lets you use one image for both modes without uploading a separate dark version. Works best with graphics, patterns, and illustrations."
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "checkbox",
+        "id": "drift_bg_auto_overlay",
+        "label": "Auto overlay",
+        "default": true,
+        "info": "Adds a mode-aware color overlay for better text readability. Light mode gets a light overlay, dark mode gets a dark overlay."
+      },
+      {
+        "type": "range",
+        "id": "drift_bg_overlay_opacity",
+        "label": "Overlay opacity",
+        "info": "How strong the overlay is. Higher values = more of the background is hidden.",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "default": 10,
+        "unit": "%"
+      }
+    ]
+  },
+  {
+    "name": "t:settings_schema.logo.name",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "t:settings_schema.logo.settings.favicon.label",
+        "info": "t:settings_schema.logo.settings.favicon.info"
+      }
+    ]
+  },
+  {
+    "name": "t:settings_schema.social-media.name",
+    "settings": [
+      {
+        "type": "text",
+        "id": "social_facebook_link",
+        "label": "t:settings_schema.social-media.settings.social_facebook_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_facebook_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_instagram_link",
+        "label": "t:settings_schema.social-media.settings.social_instagram_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_instagram_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube_link",
+        "label": "t:settings_schema.social-media.settings.social_youtube_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_youtube_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok_link",
+        "label": "t:settings_schema.social-media.settings.social_tiktok_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_tiktok_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_twitter_link",
+        "label": "t:settings_schema.social-media.settings.social_twitter_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_twitter_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_snapchat_link",
+        "label": "t:settings_schema.social-media.settings.social_snapchat_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_snapchat_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_pinterest_link",
+        "label": "t:settings_schema.social-media.settings.social_pinterest_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_pinterest_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_tumblr_link",
+        "label": "t:settings_schema.social-media.settings.social_tumblr_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_tumblr_link.info"
+      },
+      {
+        "type": "text",
+        "id": "social_vimeo_link",
+        "label": "t:settings_schema.social-media.settings.social_vimeo_link.label",
+        "placeholder": "t:settings_schema.social-media.settings.social_vimeo_link.info"
+      }
+    ]
+  },
+  {
+    "name": "t:settings_schema.search_input.name",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "predictive_search_enabled",
+        "default": true,
+        "label": "t:settings_schema.search_input.settings.predictive_search_enabled.label"
+      },
+      {
+        "type": "checkbox",
+        "id": "predictive_search_show_vendor",
+        "default": false,
+        "label": "t:settings_schema.search_input.settings.predictive_search_show_vendor.label",
+        "info": "t:settings_schema.search_input.settings.predictive_search_show_vendor.info"
+      },
+      {
+        "type": "checkbox",
+        "id": "predictive_search_show_price",
+        "default": false,
+        "label": "t:settings_schema.search_input.settings.predictive_search_show_price.label",
+        "info": "t:settings_schema.search_input.settings.predictive_search_show_price.info"
+      }
+    ]
+  },
+  {
+    "name": "t:settings_schema.currency_format.name",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.currency_format.settings.paragraph"
+      },
+      {
+        "type": "checkbox",
+        "id": "currency_code_enabled",
+        "label": "t:settings_schema.currency_format.settings.currency_code_enabled.label",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "DRIFT \u2014 Cart",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "DRIFT uses a custom cart drawer that opens automatically when a product is added to cart."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_dynamic_buttons",
+        "label": "Show dynamic checkout buttons",
+        "info": "Displays accelerated checkout buttons (Apple Pay, Shop Pay, Google Pay, etc.) below the Checkout button. Which buttons appear depends on your Shopify Payments settings.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Free Shipping Bar"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_free_shipping_enabled",
+        "label": "Enable free shipping progress bar",
+        "info": "Shows a progress bar in the cart drawer indicating how close the customer is to free shipping.",
+        "default": false
+      },
+      {
+        "type": "number",
+        "id": "cart_free_shipping_threshold",
+        "label": "Free shipping threshold",
+        "info": "Amount in your store's base currency (e.g. 100 = $100). The progress bar compares against the cart subtotal.",
+        "default": 100
+      },
+      {
+        "type": "header",
+        "content": "Cart Upsell"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_upsell_enabled",
+        "label": "Enable cart upsell",
+        "info": "Displays a collapsible row of recommended products above the checkout button. Recommendations are powered by Shopify and based on items in the cart. Products already in the cart are excluded. Products with variants link to the product page \u2014 single-variant products can be added directly.",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "cart_upsell_heading",
+        "label": "Upsell heading",
+        "default": "You may also like",
+        "info": "Heading shown above the recommended products. Customers tap to expand or collapse the section."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_upsell_expanded_desktop",
+        "label": "Expanded by default \u2014 desktop",
+        "default": false,
+        "info": "When enabled on desktop, the upsell section is open when the cart drawer opens. Otherwise customers tap the heading to expand it. Mobile is always collapsed by default."
+      },
+      {
+        "type": "range",
+        "id": "cart_upsell_limit",
+        "label": "Products to show",
+        "min": 2,
+        "max": 8,
+        "step": 1,
+        "default": 4,
+        "info": "Maximum number of recommended products. Products already in the cart are automatically excluded."
+      }
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Default Page — Renders page.title + page.content
+  Replaces Dawn's main-page.liquid
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-page" data-section-type="drift-page">
+  <span class="drift-page__container drift-container">
+    <span class="drift-page__stack{% if section.settings.text_alignment == 'center' %} drift-page__stack--center{% endif %}">
+      <span class="drift-page__title-card drift-glass">
+        <span class="drift-page__title">{{ page.title | escape }}</span>
+      </span>
+
+      {%- if page.content != blank -%}
+        <span class="drift-page__content-card drift-glass">
+          <span class="drift-page__content rte">
+            {{ page.content }}
+          </span>
+        </span>
+      {%- endif -%}
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main-page.name",
+  "tag": "section",
+  "class": "drift-page-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "left"
+    }
+  ]
+}
+{% endschema %}

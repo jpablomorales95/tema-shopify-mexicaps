@@ -1,0 +1,195 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  https://webexp.dev
+  YouTube: @WEBEXP | Instagram: @webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign policies = shop.policies
+  assign has_policies = false
+  for policy in policies
+    if policy != blank
+      assign has_policies = true
+      break
+    endif
+  endfor
+-%}
+
+{%- if has_policies -%}
+  <div class="drift-policies" data-section-id="{{ section.id }}" data-section-type="drift-policies">
+    <div class="drift-policies__container drift-container">
+
+      {%- comment -%} Desktop Tabs (horizontal pills) {%- endcomment -%}
+      <div class="drift-policies__tabs" role="tablist" aria-label="Store policies">
+        {%- for policy in policies -%}
+          {%- if policy != blank -%}
+            {%- assign policy_key = policy.title | handleize -%}
+            <button
+              type="button"
+              class="drift-policies__tab drift-glass"
+              role="tab"
+              id="policy-tab-{{ policy_key }}"
+              aria-controls="policy-panel-{{ policy_key }}"
+              aria-selected="false"
+              data-policy-tab="{{ policy_key }}"
+            >
+              {{ policy.title }}
+            </button>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%} Mobile Stacked Pills {%- endcomment -%}
+      <div class="drift-policies__pills">
+        {%- for policy in policies -%}
+          {%- if policy != blank -%}
+            {%- assign policy_key = policy.title | handleize -%}
+            <button
+              type="button"
+              class="drift-policies__pill drift-glass"
+              data-policy-pill="{{ policy_key }}"
+              aria-expanded="false"
+              aria-controls="policy-panel-{{ policy_key }}"
+            >
+              <span class="drift-policies__pill-text">{{ policy.title }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-policies__pill-arrow" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%} Content Panels — none active by default {%- endcomment -%}
+      {%- for policy in policies -%}
+        {%- if policy != blank -%}
+          {%- assign policy_key = policy.title | handleize -%}
+          <div
+            class="drift-policies__panel-wrap"
+            data-policy-panel="{{ policy_key }}"
+          >
+            {%- comment -%} Mobile Back Button — Top {%- endcomment -%}
+            <button
+              type="button"
+              class="drift-policies__back drift-glass"
+              data-policy-back
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-policies__back-icon" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+              </svg>
+              <span>Back to policies</span>
+            </button>
+
+            <div
+              class="drift-policies__panel drift-glass"
+              role="tabpanel"
+              id="policy-panel-{{ policy_key }}"
+              aria-labelledby="policy-tab-{{ policy_key }}"
+            >
+              <div class="drift-policies__content rte">
+                {{ policy.body }}
+              </div>
+            </div>
+
+            {%- comment -%} Mobile Back Button — Bottom {%- endcomment -%}
+            <button
+              type="button"
+              class="drift-policies__back drift-glass"
+              data-policy-back
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-policies__back-icon" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+              </svg>
+              <span>Back to policies</span>
+            </button>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const section = document.querySelector('[data-section-type="drift-policies"]');
+      if (!section) return;
+
+      const pillsContainer = section.querySelector('.drift-policies__pills');
+
+      function showPanel(handle) {
+        section.querySelectorAll('[data-policy-panel]').forEach(p => p.classList.remove('is-active'));
+        section.querySelectorAll('[data-policy-tab]').forEach(t => {
+          t.classList.remove('is-active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        section.querySelectorAll('[data-policy-pill]').forEach(p => p.setAttribute('aria-expanded', 'false'));
+
+        section.querySelectorAll('[data-policy-panel]').forEach(p => {
+          if (p.getAttribute('data-policy-panel') === handle) p.classList.add('is-active');
+        });
+        section.querySelectorAll('[data-policy-tab]').forEach(t => {
+          if (t.getAttribute('data-policy-tab') === handle) {
+            t.classList.add('is-active');
+            t.setAttribute('aria-selected', 'true');
+          }
+        });
+        section.querySelectorAll('[data-policy-pill]').forEach(p => {
+          if (p.getAttribute('data-policy-pill') === handle) p.setAttribute('aria-expanded', 'true');
+        });
+
+        /* Mobile: hide pills, show panel wrap */
+        if (window.innerWidth < 1024) {
+          pillsContainer.style.display = 'none';
+        }
+      }
+
+      /* Desktop Tabs */
+      section.querySelectorAll('[data-policy-tab]').forEach(tab => {
+        tab.addEventListener('click', () => {
+          showPanel(tab.getAttribute('data-policy-tab'));
+        });
+      });
+
+      /* Mobile Pills */
+      section.querySelectorAll('[data-policy-pill]').forEach(pill => {
+        pill.addEventListener('click', () => {
+          showPanel(pill.getAttribute('data-policy-pill'));
+        });
+      });
+
+      /* Mobile Back — all back buttons */
+      section.querySelectorAll('[data-policy-back]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          section.querySelectorAll('[data-policy-panel]').forEach(p => p.classList.remove('is-active'));
+          section.querySelectorAll('[data-policy-tab]').forEach(t => {
+            t.classList.remove('is-active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          section.querySelectorAll('[data-policy-pill]').forEach(p => p.setAttribute('aria-expanded', 'false'));
+          pillsContainer.style.display = '';
+        });
+      });
+    })();
+  </script>
+{%- else -%}
+  <div class="drift-policies drift-policies--empty">
+    <div class="drift-policies__container drift-container">
+      <p class="drift-muted" style="text-align: center; padding: var(--drift-space-8) 0;">
+        No policies have been added yet. Go to Settings &gt; Legal in your Shopify admin to add your store policies.
+      </p>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "DRIFT Policies",
+  "tag": "section",
+  "class": "drift-policies-section"
+}
+{% endschema %}

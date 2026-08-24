@@ -1,0 +1,109 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Customer Register — Replaces Dawn's main-register.liquid
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-customer" data-section-type="drift-customer-register">
+  <span class="drift-customer__container drift-container">
+    <span class="drift-customer__stack">
+
+      <span class="drift-customer__title-card drift-glass">
+        <span class="drift-customer__title">{{ 'customer.register.title' | t }}</span>
+      </span>
+
+      <span class="drift-customer__card drift-glass">
+        {%- form 'create_customer', novalidate: 'novalidate' -%}
+
+          {%- if form.errors -%}
+            <span class="drift-customer__error">
+              {{ form.errors | default_errors }}
+            </span>
+          {%- endif -%}
+
+          <span class="drift-customer__field">
+            <label class="drift-customer__label" for="RegisterForm-FirstName">{{ 'customer.register.first_name' | t }}</label>
+            <input
+              class="drift-customer__input"
+              type="text"
+              name="customer[first_name]"
+              id="RegisterForm-FirstName"
+              value="{{ form.first_name }}"
+              autocomplete="given-name"
+            >
+          </span>
+
+          <span class="drift-customer__field">
+            <label class="drift-customer__label" for="RegisterForm-LastName">{{ 'customer.register.last_name' | t }}</label>
+            <input
+              class="drift-customer__input"
+              type="text"
+              name="customer[last_name]"
+              id="RegisterForm-LastName"
+              value="{{ form.last_name }}"
+              autocomplete="family-name"
+            >
+          </span>
+
+          <span class="drift-customer__field">
+            <label class="drift-customer__label" for="RegisterForm-email">{{ 'customer.register.email' | t }}</label>
+            <input
+              class="drift-customer__input"
+              type="email"
+              name="customer[email]"
+              id="RegisterForm-email"
+              value="{{ form.email }}"
+              autocomplete="email"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              aria-required="true"
+              {% if form.errors contains 'email' %}aria-invalid="true" aria-describedby="RegisterForm-email-error"{% endif %}
+            >
+          </span>
+          {%- if form.errors contains 'email' -%}
+            <span class="drift-customer__error" id="RegisterForm-email-error">
+              {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}.
+            </span>
+          {%- endif -%}
+
+          <span class="drift-customer__field">
+            <label class="drift-customer__label" for="RegisterForm-password">{{ 'customer.register.password' | t }}</label>
+            <input
+              class="drift-customer__input"
+              type="password"
+              name="customer[password]"
+              id="RegisterForm-password"
+              aria-required="true"
+              {% if form.errors contains 'password' %}aria-invalid="true" aria-describedby="RegisterForm-password-error"{% endif %}
+            >
+          </span>
+          {%- if form.errors contains 'password' -%}
+            <span class="drift-customer__error" id="RegisterForm-password-error">
+              {{ form.errors.translated_fields.password | capitalize }} {{ form.errors.messages.password }}.
+            </span>
+          {%- endif -%}
+
+          <button class="drift-btn drift-btn--primary drift-customer__submit" type="submit">
+            {{ 'customer.register.submit' | t }}
+          </button>
+
+          <span class="drift-customer__footer">
+            <a href="{{ routes.account_login_url }}" class="drift-customer__link">Already have an account? Sign in</a>
+          </span>
+
+        {%- endform -%}
+      </span>
+
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main-register.name",
+  "settings": []
+}
+{% endschema %}

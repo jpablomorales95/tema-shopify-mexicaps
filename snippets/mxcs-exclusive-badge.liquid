@@ -1,0 +1,83 @@
+{%- assign is_exclusive = false -%}
+{%- if product.tags contains 'gate' or product.tags contains 'preventa' or product.tags contains 'exclusivo' -%}
+  {%- assign is_exclusive = true -%}
+{%- endif -%}
+
+{%- if is_exclusive -%}
+  <span class="mxcs-exclusive-badge">
+    <span class="mxcs-exclusive-badge__pill">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <span class="mxcs-exclusive-badge__top">PRODUCTO EXCLUSIVO</span>
+    </span>
+    <span class="mxcs-exclusive-badge__sub">Necesitas código de ingreso</span>
+  </span>
+{%- endif -%}
+
+<style>
+  .drift-feed__media,
+  .drift-feed__slide,
+  .drift-collection__grid-img-wrap,
+  .drift-collection__grid-link {
+    position: relative !important;
+    overflow: hidden;
+  }
+
+  .mxcs-exclusive-badge {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    pointer-events: none;
+    width: max-content;
+    max-width: 88%;
+  }
+
+  .mxcs-exclusive-badge__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 100px;
+    padding: 7px 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }
+
+  .mxcs-exclusive-badge__top {
+    font-family: var(--drift-font-heading, sans-serif);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: #ffffff;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .mxcs-exclusive-badge__sub {
+    font-family: var(--drift-font-body, sans-serif);
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.2px;
+    line-height: 1;
+    white-space: nowrap;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+</style>

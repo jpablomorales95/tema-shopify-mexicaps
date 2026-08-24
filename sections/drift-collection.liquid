@@ -1,0 +1,774 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  DRIFT Collection — Feed + Grid Views
+  V2: Filter + Sort
+  V3: Quick-Add Overlay (Grid View)
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign products = collection.products
+  assign limit = section.settings.products_per_page | default: 20
+  assign image_ratio = section.settings.image_ratio | default: '1-1'
+  assign default_view = section.settings.default_view | default: 'feed'
+  assign allow_toggle = section.settings.allow_toggle
+  assign show_title = section.settings.show_title
+  assign show_price = section.settings.show_price
+  assign hover_effect = section.settings.hover_effect | default: 'grow'
+  assign indicator = section.settings.indicator_type
+  assign grid_columns = section.settings.grid_columns_desktop | default: 4
+  assign enable_quick_add = section.settings.enable_quick_add
+  assign enable_filtering = section.settings.enable_filtering
+  assign enable_sorting = section.settings.enable_sorting
+  assign total = products.size
+  if total > limit
+    assign total = limit
+  endif
+
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign active_filter_count = 0
+  for filter in collection.filters
+    assign active_filter_count = active_filter_count | plus: filter.active_values.size
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+    endif
+  endfor
+-%}
+
+{%- comment -%} Collection Title Bar — fixed below header {%- endcomment -%}
+<span
+  class="drift-collection__title-bar"
+  data-collection-title-bar
+>
+  {%- comment -%} Filter Button {%- endcomment -%}
+  {%- if enable_filtering -%}
+    <button
+      type="button"
+      class="drift-collection__filter-btn drift-glass"
+      data-collection-filter-toggle
+      aria-label="Filter products"
+      aria-expanded="false"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="4" y1="6" x2="20" y2="6"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="11" y1="18" x2="13" y2="18"/>
+      </svg>
+      <span class="drift-collection__btn-label">Filter</span>
+      {%- if active_filter_count > 0 -%}
+        <span class="drift-collection__filter-count" data-filter-count>{{ active_filter_count }}</span>
+      {%- endif -%}
+    </button>
+  {%- endif -%}
+
+  <span class="drift-collection__title-pill drift-glass">
+    <span class="drift-collection__title">{{ collection.title | escape }}</span>
+  </span>
+
+  {%- comment -%} Sort Button {%- endcomment -%}
+  {%- if enable_sorting -%}
+    <button
+      type="button"
+      class="drift-collection__sort-btn drift-glass"
+      data-collection-sort-toggle
+      aria-label="Sort products"
+      aria-expanded="false"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M7 4v16M7 20l-3-3m3 3l3-3"/>
+        <path d="M17 20V4m0 0l3 3m-3-3l-3 3"/>
+      </svg>
+      <span class="drift-collection__btn-label">Sort</span>
+    </button>
+  {%- endif -%}
+</span>
+
+{%- comment -%} ════════ DESKTOP FILTER DROPDOWN ════════ {%- endcomment -%}
+{%- if enable_filtering -%}
+  <div class="drift-collection__filter-dropdown drift-glass" data-filter-dropdown aria-hidden="true">
+    <form data-filter-form>
+      <div class="drift-collection__filter-groups">
+        {%- for filter in collection.filters -%}
+          <div class="drift-collection__filter-group" data-filter-group>
+
+            <button type="button" class="drift-collection__filter-group-toggle" data-filter-group-toggle aria-expanded="true">
+              <span>{{ filter.label | escape }}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            <div class="drift-collection__filter-group-body" data-filter-group-body>
+              {%- if filter.type == 'price_range' -%}
+                <div class="drift-collection__price-range">
+                  <div class="drift-collection__price-field">
+                    <label for="filter-price-min-{{ section.id }}" class="drift-sr-only">Min price</label>
+                    <span class="drift-collection__price-prefix">$</span>
+                    <input
+                      type="number"
+                      id="filter-price-min-{{ section.id }}"
+                      name="{{ filter.min_value.param_name }}"
+                      class="drift-collection__price-input"
+                      placeholder="Min"
+                      {% if filter.min_value.value != nil %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                      min="0"
+                      inputmode="numeric"
+                    >
+                  </div>
+                  <span class="drift-collection__price-sep">–</span>
+                  <div class="drift-collection__price-field">
+                    <label for="filter-price-max-{{ section.id }}" class="drift-sr-only">Max price</label>
+                    <span class="drift-collection__price-prefix">$</span>
+                    <input
+                      type="number"
+                      id="filter-price-max-{{ section.id }}"
+                      name="{{ filter.max_value.param_name }}"
+                      class="drift-collection__price-input"
+                      placeholder="Max"
+                      {% if filter.max_value.value != nil %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                      min="0"
+                      inputmode="numeric"
+                    >
+                  </div>
+                </div>
+
+              {%- else -%}
+                <div class="drift-collection__filter-values">
+                  {%- for value in filter.values -%}
+                    <label class="drift-collection__filter-check{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                      <input
+                        type="checkbox"
+                        name="{{ value.param_name }}"
+                        value="{{ value.value }}"
+                        {% if value.active %}checked{% endif %}
+                        {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                        class="drift-sr-only"
+                        data-filter-input
+                      >
+                      <span class="drift-collection__filter-checkbox">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                      </span>
+                      <span class="drift-collection__filter-label">{{ value.label | escape }}</span>
+                      <span class="drift-collection__filter-count-val">({{ value.count }})</span>
+                    </label>
+                  {%- endfor -%}
+                </div>
+              {%- endif -%}
+            </div>
+
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <div class="drift-collection__filter-actions">
+        {%- if active_filter_count > 0 -%}
+          <a href="{{ collection.url }}" class="drift-collection__filter-clear" data-filter-clear>Clear All</a>
+        {%- endif -%}
+        <button type="submit" class="drift-btn drift-btn--primary drift-collection__filter-apply">Apply</button>
+      </div>
+    </form>
+  </div>
+{%- endif -%}
+
+{%- comment -%} ════════ DESKTOP SORT DROPDOWN ════════ {%- endcomment -%}
+{%- if enable_sorting -%}
+  <div class="drift-collection__sort-dropdown drift-glass" data-sort-dropdown aria-hidden="true">
+    {%- assign sort_options = 'best-selling|Best Selling,title-ascending|A – Z,title-descending|Z – A,price-ascending|Price: Low → High,price-descending|Price: High → Low,created-descending|Newest' | split: ',' -%}
+    {%- for opt in sort_options -%}
+      {%- assign parts = opt | split: '|' -%}
+      {%- assign opt_val = parts[0] -%}
+      {%- assign opt_label = parts[1] -%}
+      <button
+        type="button"
+        class="drift-collection__sort-option{% if sort_by == opt_val %} is-active{% endif %}"
+        data-sort-value="{{ opt_val }}"
+      >
+        {{ opt_label }}
+      </button>
+    {%- endfor -%}
+  </div>
+{%- endif -%}
+
+{%- comment -%} ════════ MOBILE DRAWER ════════ {%- endcomment -%}
+{%- if enable_filtering or enable_sorting -%}
+  <span class="drift-collection__mobile-backdrop" data-collection-mobile-backdrop aria-hidden="true"></span>
+  <div class="drift-collection__mobile-drawer drift-glass" data-collection-mobile-drawer aria-hidden="true">
+    <span class="drift-collection__mobile-handle" data-collection-mobile-handle>
+      <span class="drift-collection__mobile-handle-bar"></span>
+    </span>
+
+    {%- comment -%} Tabs {%- endcomment -%}
+    {%- if enable_filtering and enable_sorting -%}
+      <div class="drift-collection__mobile-tabs">
+        <button type="button" class="drift-collection__mobile-tab is-active" data-mobile-tab="filter">Filter</button>
+        <button type="button" class="drift-collection__mobile-tab" data-mobile-tab="sort">Sort</button>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} Filter Panel {%- endcomment -%}
+    {%- if enable_filtering -%}
+      <div class="drift-collection__mobile-panel" data-mobile-panel="filter" {% unless enable_filtering and enable_sorting %}style="display:block"{% endunless %}>
+        <form data-filter-form-mobile>
+          <div class="drift-collection__filter-groups">
+            {%- for filter in collection.filters -%}
+              <div class="drift-collection__filter-group" data-filter-group>
+
+                <button type="button" class="drift-collection__filter-group-toggle" data-filter-group-toggle aria-expanded="true">
+                  <span>{{ filter.label | escape }}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+
+                <div class="drift-collection__filter-group-body" data-filter-group-body>
+                  {%- if filter.type == 'price_range' -%}
+                    <div class="drift-collection__price-range">
+                      <div class="drift-collection__price-field">
+                        <label for="filter-price-min-mobile-{{ section.id }}" class="drift-sr-only">Min price</label>
+                        <span class="drift-collection__price-prefix">$</span>
+                        <input
+                          type="number"
+                          id="filter-price-min-mobile-{{ section.id }}"
+                          name="{{ filter.min_value.param_name }}"
+                          class="drift-collection__price-input"
+                          placeholder="Min"
+                          {% if filter.min_value.value != nil %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                          min="0"
+                          inputmode="numeric"
+                        >
+                      </div>
+                      <span class="drift-collection__price-sep">–</span>
+                      <div class="drift-collection__price-field">
+                        <label for="filter-price-max-mobile-{{ section.id }}" class="drift-sr-only">Max price</label>
+                        <span class="drift-collection__price-prefix">$</span>
+                        <input
+                          type="number"
+                          id="filter-price-max-mobile-{{ section.id }}"
+                          name="{{ filter.max_value.param_name }}"
+                          class="drift-collection__price-input"
+                          placeholder="Max"
+                          {% if filter.max_value.value != nil %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                          min="0"
+                          inputmode="numeric"
+                        >
+                      </div>
+                    </div>
+                  {%- else -%}
+                    <div class="drift-collection__filter-values">
+                      {%- for value in filter.values -%}
+                        <label class="drift-collection__filter-check{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                          <input
+                            type="checkbox"
+                            name="{{ value.param_name }}"
+                            value="{{ value.value }}"
+                            {% if value.active %}checked{% endif %}
+                            {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                            class="drift-sr-only"
+                            data-filter-input
+                          >
+                          <span class="drift-collection__filter-checkbox">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                          </span>
+                          <span class="drift-collection__filter-label">{{ value.label | escape }}</span>
+                          <span class="drift-collection__filter-count-val">({{ value.count }})</span>
+                        </label>
+                      {%- endfor -%}
+                    </div>
+                  {%- endif -%}
+                </div>
+
+              </div>
+            {%- endfor -%}
+          </div>
+
+          <div class="drift-collection__filter-actions">
+            {%- if active_filter_count > 0 -%}
+              <a href="{{ collection.url }}" class="drift-collection__filter-clear" data-filter-clear>Clear All</a>
+            {%- endif -%}
+            <button type="submit" class="drift-btn drift-btn--primary drift-collection__filter-apply">Apply</button>
+          </div>
+        </form>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} Sort Panel {%- endcomment -%}
+    {%- if enable_sorting -%}
+      <div class="drift-collection__mobile-panel" data-mobile-panel="sort" {% if enable_filtering %}style="display:none"{% else %}style="display:block"{% endif %}>
+        {%- assign sort_options = 'best-selling|Best Selling,title-ascending|A – Z,title-descending|Z – A,price-ascending|Price: Low → High,price-descending|Price: High → Low,created-descending|Newest' | split: ',' -%}
+        {%- for opt in sort_options -%}
+          {%- assign parts = opt | split: '|' -%}
+          {%- assign opt_val = parts[0] -%}
+          {%- assign opt_label = parts[1] -%}
+          <button
+            type="button"
+            class="drift-collection__sort-option{% if sort_by == opt_val %} is-active{% endif %}"
+            data-sort-value="{{ opt_val }}"
+          >
+            {{ opt_label }}
+          </button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+
+{%- if products.size > 0 -%}
+  <div
+    class="drift-collection"
+    data-section-id="{{ section.id }}"
+    data-section-type="drift-collection"
+    data-default-view="{{ default_view }}"
+    data-allow-toggle="{{ allow_toggle }}"
+    data-view-mode="{{ default_view }}"
+    data-hover-effect="{{ hover_effect }}"
+  >
+
+    {%- comment -%} ============================================
+       FEED VIEW
+       ============================================ {%- endcomment -%}
+    <div
+      class="drift-feed drift-collection__feed"
+      data-section-type="drift-feed"
+      data-collection-view="feed"
+      data-feed-total="{{ total }}"
+      data-feed-hover="{{ hover_effect }}"
+      aria-label="{{ collection.title | escape }} — swipe or scroll to browse"
+      {% if default_view == 'grid' %}hidden{% endif %}
+    >
+      <div class="drift-feed__track" data-feed-track data-feed-ratio="{{ image_ratio }}">
+
+        <span class="drift-feed__spacer drift-feed__spacer--top" data-feed-spacer="top" aria-hidden="true"></span>
+
+        {%- for product in products limit: limit -%}
+          {%- assign featured_image = product.featured_image -%}
+          {%- assign is_sold_out = false -%}
+          {%- unless product.available -%}
+            {%- assign is_sold_out = true -%}
+          {%- endunless -%}
+          <a
+            href="{{ product.url }}?collection={{ collection.url | url_encode }}&feed_index={{ forloop.index0 }}"
+            class="drift-feed__slide{% if is_sold_out %} is-sold-out{% endif %}"
+            data-feed-slide="{{ forloop.index0 }}"
+            aria-label="{{ product.title | escape }}{% if is_sold_out %} — sold out{% endif %}"
+          >
+            {% render 'drift-badge', product: product %}
+            <span class="drift-feed__media">
+              {% render 'mxcs-exclusive-badge', product: product %}
+              {%- if featured_image != blank -%}
+                <img
+                  src="{{ featured_image | image_url: width: 1200 }}"
+                  srcset="
+                    {{ featured_image | image_url: width: 600 }} 600w,
+                    {{ featured_image | image_url: width: 900 }} 900w,
+                    {{ featured_image | image_url: width: 1200 }} 1200w,
+                    {{ featured_image | image_url: width: 1800 }} 1800w
+                  "
+                  sizes="100vw"
+                  alt="{{ featured_image.alt | default: product.title | escape }}"
+                  width="{{ featured_image.width }}"
+                  height="{{ featured_image.height }}"
+                  class="drift-feed__image"
+                  {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                  draggable="false"
+                >
+              {%- comment -%} Image-swap hover effect: 2nd image fades in on hover {%- endcomment -%}
+              {%- if hover_effect == 'image-swap' and product.available and product.images.size > 1 -%}
+                {%- assign hover_image = product.images[1] -%}
+                <img
+                  src="{{ hover_image | image_url: width: 1200 }}"
+                  srcset="
+                    {{ hover_image | image_url: width: 600 }} 600w,
+                    {{ hover_image | image_url: width: 900 }} 900w,
+                    {{ hover_image | image_url: width: 1200 }} 1200w,
+                    {{ hover_image | image_url: width: 1800 }} 1800w
+                  "
+                  sizes="100vw"
+                  alt=""
+                  width="{{ hover_image.width }}"
+                  height="{{ hover_image.height }}"
+                  class="drift-feed__image drift-feed__image--hover"
+                  loading="lazy"
+                  draggable="false"
+                  aria-hidden="true"
+                >
+              {%- endif -%}
+              {%- else -%}
+                <span class="drift-feed__placeholder">
+                  {{ product.title | escape }}
+                </span>
+              {%- endif -%}
+            </span>
+
+            {%- if show_title or show_price or enable_quick_add -%}
+              <span class="drift-feed__info" data-feed-info>
+                {%- if show_title -%}
+                  <span class="drift-feed__title" data-feed-title>{{ product.title | escape }}</span>
+                {%- endif -%}
+                {%- if show_price -%}
+                  <span class="drift-feed__price" data-feed-price>
+                    {%- if is_sold_out -%}
+                      <span class="drift-feed__price-sold-out">{{ 'products.product.sold_out' | t }}</span>
+                    {%- else -%}
+                      {%- if product.compare_at_price > product.price -%}
+                        {%- assign compare_mod = product.compare_at_price | modulo: 100 -%}
+                        <span class="drift-feed__price-compare" data-compare-price="{{ product.compare_at_price }}">
+                          {%- if compare_mod == 0 -%}
+                            {{ product.compare_at_price | money_without_trailing_zeros }}
+                          {%- else -%}
+                            {{ product.compare_at_price | money }}
+                          {%- endif -%}
+                        </span>
+                      {%- endif -%}
+                      {%- assign price_mod = product.price | modulo: 100 -%}
+                      <span class="drift-feed__price-current{% if product.compare_at_price > product.price %} drift-feed__price-current--sale{% endif %}" data-product-price="{{ product.price }}">
+                        {%- if price_mod == 0 -%}
+                          {{ product.price | money_without_trailing_zeros }}
+                        {%- else -%}
+                          {{ product.price | money }}
+                        {%- endif -%}
+                      </span>
+                    {%- endif -%}
+                  </span>
+                {%- endif -%}
+                {%- if enable_quick_add and product.available -%}
+                  <button
+                    class="drift-feed__quick-add-btn"
+                    data-quick-add-trigger
+                    data-product-url="{{ product.url }}.js"
+                    data-product-id="{{ product.id }}"
+                    type="button"
+                    aria-label="Quick add {{ product.title | escape }}"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  {% render 'drift-quick-add-prices', product: product %}
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+          </a>
+        {%- endfor -%}
+
+        <span class="drift-feed__spacer drift-feed__spacer--bottom" data-feed-spacer="bottom" aria-hidden="true"></span>
+
+      </div>
+
+      {%- comment -%} Feed Indicator — Dots {%- endcomment -%}
+      {%- if indicator == 'dots' -%}
+        <span class="drift-feed__indicator drift-feed__indicator--dots" data-feed-indicator="dots" aria-hidden="true">
+          {%- for product in products limit: limit -%}
+            <button
+              class="drift-feed__dot{% if forloop.first %} is-active{% endif %}"
+              data-feed-dot="{{ forloop.index0 }}"
+              type="button"
+              aria-label="Go to product {{ forloop.index }}"
+            ></button>
+          {%- endfor -%}
+        </span>
+      {%- endif -%}
+
+      {%- comment -%} Feed Indicator — Numbers {%- endcomment -%}
+      {%- if indicator == 'numbers' -%}
+        <span class="drift-feed__indicator drift-feed__indicator--numbers drift-glass drift-glass--subtle" data-feed-indicator="numbers">
+          <span data-feed-current>{% if total >= 10 %}01{% else %}1{% endif %}</span>
+          <span class="drift-feed__counter-sep"></span>
+          <span data-feed-total>{% if total >= 10 %}{{ total | prepend: '00' | slice: -2, 2 }}{% else %}{{ total }}{% endif %}</span>
+        </span>
+      {%- endif -%}
+
+    </div>
+
+    {%- comment -%} ============================================
+       GRID VIEW
+       ============================================ {%- endcomment -%}
+    <div
+      class="drift-collection__grid-wrap"
+      data-collection-view="grid"
+      data-grid-ratio="{{ image_ratio }}"
+      data-grid-hover="{{ hover_effect }}"
+      {% if default_view == 'feed' %}hidden{% endif %}
+    >
+      <div class="drift-collection__grid drift-collection__grid--{{ grid_columns }}-col">
+        {%- for product in products limit: limit -%}
+          {%- assign featured_image = product.featured_image -%}
+          {%- assign is_sold_out = false -%}
+          {%- unless product.available -%}
+            {%- assign is_sold_out = true -%}
+          {%- endunless -%}
+          <span class="drift-collection__grid-item{% if is_sold_out %} is-sold-out{% endif %}">
+            <a
+              href="{{ product.url }}"
+              class="drift-collection__grid-link"
+              aria-label="{{ product.title | escape }}{% if is_sold_out %} — sold out{% endif %}"
+            >
+              <span class="drift-collection__grid-img-wrap">
+                {% render 'drift-badge', product: product %}
+                {% render 'mxcs-exclusive-badge', product: product %}
+                {%- if featured_image != blank -%}
+                  <img
+                    src="{{ featured_image | image_url: width: 200 }}"
+                    data-src="{{ featured_image | image_url: width: 800 }}"
+                    data-srcset="
+                      {{ featured_image | image_url: width: 400 }} 400w,
+                      {{ featured_image | image_url: width: 600 }} 600w,
+                      {{ featured_image | image_url: width: 800 }} 800w
+                    "
+                    sizes="(min-width: 1024px) 25vw, 50vw"
+                    alt="{{ featured_image.alt | default: product.title | escape }}"
+                    width="{{ featured_image.width }}"
+                    height="{{ featured_image.height }}"
+                    class="drift-collection__grid-img"
+                    loading="eager"
+                    draggable="false"
+                  >
+                  {%- if hover_effect == 'image-swap' and product.available and product.images.size > 1 -%}
+                    {%- assign hover_image = product.images[1] -%}
+                    <img
+                      src="{{ hover_image | image_url: width: 400 }}"
+                      data-src="{{ hover_image | image_url: width: 800 }}"
+                      data-srcset="
+                        {{ hover_image | image_url: width: 400 }} 400w,
+                        {{ hover_image | image_url: width: 600 }} 600w,
+                        {{ hover_image | image_url: width: 800 }} 800w
+                      "
+                      sizes="(min-width: 1024px) 25vw, 50vw"
+                      alt=""
+                      width="{{ hover_image.width }}"
+                      height="{{ hover_image.height }}"
+                      class="drift-collection__grid-img drift-collection__grid-img--hover"
+                      loading="lazy"
+                      draggable="false"
+                      aria-hidden="true"
+                    >
+                  {%- endif -%}
+                {%- else -%}
+                  <span class="drift-collection__grid-placeholder">
+                    {{ product.title | truncate: 20 }}
+                  </span>
+                {%- endif -%}
+
+                {%- if enable_quick_add and product.available -%}
+                  <button
+                    class="drift-collection__quick-add-btn"
+                    data-quick-add-trigger
+                    data-product-url="{{ product.url }}.js"
+                    data-product-id="{{ product.id }}"
+                    type="button"
+                    aria-label="Quick add {{ product.title | escape }}"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  {% render 'drift-quick-add-prices', product: product %}
+                {%- endif -%}
+              </span>
+
+              {%- if show_title or show_price -%}
+                <span class="drift-collection__grid-info">
+                  {%- if show_title -%}
+                    <span class="drift-collection__grid-product-title">{{ product.title | escape }}</span>
+                  {%- endif -%}
+                  {%- if show_price -%}
+                    <span class="drift-collection__grid-price">
+                      {%- if is_sold_out -%}
+                        <span class="drift-collection__grid-price-sold-out">{{ 'products.product.sold_out' | t }}</span>
+                      {%- else -%}
+                        {%- if product.compare_at_price > product.price -%}
+                          {%- assign compare_mod = product.compare_at_price | modulo: 100 -%}
+                          <span class="drift-collection__grid-price-compare">
+                            {%- if compare_mod == 0 -%}
+                              {{ product.compare_at_price | money_without_trailing_zeros }}
+                            {%- else -%}
+                              {{ product.compare_at_price | money }}
+                            {%- endif -%}
+                          </span>
+                        {%- endif -%}
+                        {%- assign price_mod = product.price | modulo: 100 -%}
+                        <span class="drift-collection__grid-price-current{% if product.compare_at_price > product.price %} drift-collection__grid-price-current--sale{% endif %}">
+                          {%- if price_mod == 0 -%}
+                            {{ product.price | money_without_trailing_zeros }}
+                          {%- else -%}
+                            {{ product.price | money }}
+                          {%- endif -%}
+                        </span>
+                      {%- endif -%}
+                    </span>
+                  {%- endif -%}
+                </span>
+              {%- endif -%}
+            </a>
+          </span>
+        {%- endfor -%}
+      </div>
+    </div>
+
+  </div>
+{%- else -%}
+  <div class="drift-collection drift-collection--empty">
+    <span class="drift-container">
+      <p class="drift-muted" style="text-align: center; padding: var(--drift-space-8) 0;">
+        No products found in this collection.
+      </p>
+    </span>
+  </div>
+{%- endif -%}
+
+{%- if enable_quick_add -%}
+  {% render 'drift-quick-add' %}
+{%- endif -%}
+
+<script src="{{ 'drift-feed.js' | asset_url }}" defer></script>
+<script src="{{ 'drift-collection.js' | asset_url }}" defer></script>
+<script src="{{ 'drift-filter-sort.js' | asset_url }}" defer></script>
+{%- if enable_quick_add -%}
+  <script src="{{ 'drift-quick-add.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+
+{% schema %}
+{
+  "name": "DRIFT Collection Feed",
+  "tag": "section",
+  "class": "drift-collection-section",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "View Settings"
+    },
+    {
+      "type": "select",
+      "id": "default_view",
+      "label": "Default view",
+      "options": [
+        { "value": "feed", "label": "Feed" },
+        { "value": "grid", "label": "Grid" }
+      ],
+      "default": "feed",
+      "info": "Which layout loads first. Shoppers can toggle if allowed."
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_toggle",
+      "label": "Allow view toggle",
+      "default": true,
+      "info": "Show a feed/grid toggle icon in the header on collection pages."
+    },
+    {
+      "type": "header",
+      "content": "Filter & Sort"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "label": "Enable filtering",
+      "default": true,
+      "info": "Show filter button on collection pages. Configure available filters in Shopify Admin → Online Store → Navigation."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Enable sorting",
+      "default": true,
+      "info": "Show sort button on collection pages."
+    },
+    {
+      "type": "header",
+      "content": "Feed Settings"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "1-1", "label": "1:1 (Square)" },
+        { "value": "3-4", "label": "3:4 (Portrait)" }
+      ],
+      "default": "1-1",
+      "info": "Applies to both feed and grid views."
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products to show",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "info": "Maximum number of products displayed."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show product title",
+      "default": true,
+      "info": "Display product title in both feed and grid views."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show product price",
+      "default": true,
+      "info": "Display product price in both feed and grid views."
+    },
+    {
+      "type": "select",
+      "id": "hover_effect",
+      "label": "Hover effect",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "grow", "label": "Grow" },
+        { "value": "glow", "label": "Glow" },
+        { "value": "image-swap", "label": "Image swap" }
+      ],
+      "default": "grow",
+      "info": "Grow scales up subtly. Glow adds a soft outline. Image swap fades to the product's 2nd image on hover (requires a 2nd image on the product). Desktop only."
+    },
+    {
+      "type": "select",
+      "id": "indicator_type",
+      "label": "Feed indicator",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "dots", "label": "Dots" },
+        { "value": "numbers", "label": "Numbers" }
+      ],
+      "default": "numbers",
+      "info": "Progress indicator shown in feed view."
+    },
+    {
+      "type": "header",
+      "content": "Grid Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_quick_add",
+      "label": "Enable quick add",
+      "default": false,
+      "info": "Shows a quick-add button on grid view cards. Customers can select variants and add to cart without leaving the collection page."
+    },
+    {
+      "type": "select",
+      "id": "grid_columns_desktop",
+      "label": "Grid columns (desktop)",
+      "options": [
+        { "value": "3", "label": "3 columns" },
+        { "value": "4", "label": "4 columns" }
+      ],
+      "default": "4",
+      "info": "Mobile is always 2 columns."
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Collection Feed"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,116 @@
+{% comment %}
+  ============================================
+  DRIFT — Split Banner (V2)
+  By WEBEXP | webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-split-banner" data-drift-split-banner>
+  <span class="drift-split-banner__container">
+    <span class="drift-glass drift-split-banner__card">
+
+      {%- for block in section.blocks -%}
+        <span class="drift-split-banner__panel" {{ block.shopify_attributes }}>
+
+          {%- comment -%} Image {%- endcomment -%}
+          <span class="drift-split-banner__media">
+            {%- if block.settings.image != blank -%}
+              <img
+                class="drift-split-banner__img"
+                src="{{ block.settings.image | image_url: width: 1200 }}"
+                srcset="
+                  {{ block.settings.image | image_url: width: 600 }} 600w,
+                  {{ block.settings.image | image_url: width: 900 }} 900w,
+                  {{ block.settings.image | image_url: width: 1200 }} 1200w
+                "
+                sizes="(max-width: 1023px) 100vw, 50vw"
+                alt="{{ block.settings.image.alt | default: block.settings.heading | escape }}"
+                loading="lazy"
+                width="{{ block.settings.image.width }}"
+                height="{{ block.settings.image.height }}"
+              >
+            {%- else -%}
+              <span class="drift-split-banner__placeholder">
+                {{ 'collection-1' | placeholder_svg_tag }}
+              </span>
+            {%- endif -%}
+          </span>
+
+          {%- comment -%} Overlay content {%- endcomment -%}
+          {%- if block.settings.heading != blank or block.settings.button_label != blank -%}
+            <span class="drift-split-banner__overlay">
+              {%- if block.settings.heading != blank -%}
+                <h3 class="drift-split-banner__heading">{{ block.settings.heading }}</h3>
+              {%- endif -%}
+              {%- if block.settings.button_label != blank and block.settings.button_link != blank -%}
+                <a href="{{ block.settings.button_link }}" class="drift-btn drift-btn--primary drift-split-banner__btn">
+                  {{ block.settings.button_label }}
+                </a>
+              {%- endif -%}
+            </span>
+          {%- endif -%}
+
+          {%- comment -%} Full panel link if no button but link is set {%- endcomment -%}
+          {%- if block.settings.button_label == blank and block.settings.button_link != blank -%}
+            <a href="{{ block.settings.button_link }}" class="drift-split-banner__link" aria-label="{{ block.settings.heading | default: 'View collection' | escape }}"></a>
+          {%- endif -%}
+
+        </span>
+      {%- endfor -%}
+
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "Split Banner",
+  "tag": "section",
+  "class": "drift-section",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [],
+  "blocks": [
+    {
+      "type": "panel",
+      "name": "Panel",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Shop Now"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "info": "Leave blank to make the entire panel clickable"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Split Banner",
+      "blocks": [
+        { "type": "panel", "settings": { "heading": "New Arrivals" } },
+        { "type": "panel", "settings": { "heading": "Sale" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

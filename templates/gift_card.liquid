@@ -1,0 +1,639 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Gift Card Page — Standalone (layout: none)
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+{% layout none %}
+
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" data-drift-mode="{{ settings.drift_default_mode | default: 'dark' }}">
+  <head>
+    <script src="{{ 'vendor/qrcode.js' | shopify_asset_url }}" defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0A0A0A">
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    {%- assign formatted_balance = gift_card.balance | money_without_trailing_zeros | strip_html -%}
+    <title>{{ 'gift_cards.issued.title' | t: value: formatted_balance, shop: shop.name }}</title>
+    <meta name="description" content="{{ 'gift_cards.issued.subtext' | t }}">
+
+    {{ content_for_header }}
+
+    <style>
+      /* ============================================
+         DRIFT Tokens — Inlined (no layout)
+         ============================================ */
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --drift-bg: #FAFAFA;
+        --drift-text: #1D1D1F;
+        --drift-text-muted: #86868B;
+        --drift-border: rgba(0, 0, 0, 0.06);
+        --drift-glass-bg: rgba(255, 255, 255, 0.55);
+        --drift-glass-border: rgba(255, 255, 255, 0.4);
+        --drift-glass-blur: 20px;
+        --drift-glass-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+        --drift-surface: rgba(255, 255, 255, 0.6);
+        --drift-btn-primary-bg: #1D1D1F;
+        --drift-btn-primary-text: #FFFFFF;
+        --drift-btn-outline-border: rgba(0, 0, 0, 0.2);
+        --drift-btn-outline-text: #1D1D1F;
+
+        --drift-font-body: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --drift-text-xs: 0.694rem;
+        --drift-text-sm: 0.833rem;
+        --drift-text-base: 1rem;
+        --drift-text-md: 1.2rem;
+        --drift-text-lg: 1.44rem;
+        --drift-text-xl: 1.728rem;
+        --drift-text-2xl: 2.074rem;
+        --drift-text-3xl: 2.488rem;
+
+        --drift-weight-regular: 400;
+        --drift-weight-medium: 500;
+        --drift-weight-semibold: 600;
+        --drift-weight-bold: 700;
+
+        --drift-tracking-wide: 0.04em;
+        --drift-tracking-caps: 0.05em;
+
+        --drift-space-1: 8px;
+        --drift-space-2: 16px;
+        --drift-space-3: 24px;
+        --drift-space-4: 32px;
+        --drift-space-5: 40px;
+        --drift-space-6: 48px;
+
+        --drift-radius-sm: 8px;
+        --drift-radius-md: 12px;
+        --drift-radius-lg: 20px;
+        --drift-radius-full: 9999px;
+
+        --drift-duration-fast: 150ms;
+        --drift-duration-normal: 300ms;
+        --drift-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+      }
+
+      [data-drift-mode="dark"] {
+        --drift-bg: #0A0A0A;
+        --drift-text: #F5F5F7;
+        --drift-text-muted: #86868B;
+        --drift-border: rgba(255, 255, 255, 0.08);
+        --drift-glass-bg: rgba(28, 28, 30, 0.55);
+        --drift-glass-border: rgba(255, 255, 255, 0.08);
+        --drift-glass-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+        --drift-surface: rgba(28, 28, 30, 0.6);
+        --drift-btn-primary-bg: #F5F5F7;
+        --drift-btn-primary-text: #1D1D1F;
+        --drift-btn-outline-border: rgba(255, 255, 255, 0.2);
+        --drift-btn-outline-text: #F5F5F7;
+      }
+
+      /* ============================================
+         Base
+         ============================================ */
+
+      html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: var(--drift-font-body);
+        font-size: var(--drift-text-base);
+        font-weight: var(--drift-weight-regular);
+        line-height: 1.5;
+        color: var(--drift-text);
+        background-color: var(--drift-bg);
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overscroll-behavior: none;
+        transition:
+          background-color var(--drift-duration-normal) var(--drift-ease),
+          color var(--drift-duration-normal) var(--drift-ease);
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+      }
+
+      /* ============================================
+         Glass
+         ============================================ */
+
+      .drift-glass {
+        background: var(--drift-glass-bg);
+        -webkit-backdrop-filter: blur(var(--drift-glass-blur));
+        backdrop-filter: blur(var(--drift-glass-blur));
+        border: 1px solid var(--drift-glass-border);
+        box-shadow: var(--drift-glass-shadow);
+      }
+
+      /* ============================================
+         Gift Card Layout
+         ============================================ */
+
+      .drift-gc {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 480px;
+        padding: 0 var(--drift-space-2);
+        gap: var(--drift-space-2);
+      }
+
+      /* ----------------------------------------
+         Mode Toggle — top right
+         ---------------------------------------- */
+
+      .drift-gc__toggle {
+        position: fixed;
+        top: var(--drift-space-2);
+        right: var(--drift-space-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--drift-radius-full);
+        color: var(--drift-text);
+        z-index: 10;
+        transition: background-color var(--drift-duration-fast) var(--drift-ease);
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .drift-gc__toggle:hover {
+        background-color: var(--drift-surface);
+      }
+
+      .drift-gc__toggle svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2;
+      }
+
+      .drift-gc__icon-sun { display: block; }
+      .drift-gc__icon-moon { display: none; }
+
+      [data-drift-mode="dark"] .drift-gc__icon-sun { display: none; }
+      [data-drift-mode="dark"] .drift-gc__icon-moon { display: block; }
+
+      /* ----------------------------------------
+         Title Pill
+         ---------------------------------------- */
+
+      .drift-gc__title-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px var(--drift-space-3);
+        border-radius: var(--drift-radius-full);
+      }
+
+      .drift-gc__title {
+        font-size: var(--drift-text-md);
+        font-weight: var(--drift-weight-semibold);
+        letter-spacing: var(--drift-tracking-caps);
+        text-transform: uppercase;
+        color: var(--drift-text);
+      }
+
+      /* ----------------------------------------
+         Card
+         ---------------------------------------- */
+
+      .drift-gc__card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--drift-space-3);
+        padding: var(--drift-space-4);
+        border-radius: var(--drift-radius-lg);
+        width: 100%;
+        max-height: 75dvh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .drift-gc__card::-webkit-scrollbar {
+        display: none;
+      }
+
+      @media (max-width: 1023px) {
+        .drift-gc__card {
+          padding: var(--drift-space-3);
+        }
+      }
+
+      /* ----------------------------------------
+         Balance
+         ---------------------------------------- */
+
+      .drift-gc__balance {
+        display: flex;
+        align-items: center;
+        gap: var(--drift-space-1);
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .drift-gc__amount {
+        font-size: var(--drift-text-2xl);
+        font-weight: var(--drift-weight-bold);
+        letter-spacing: var(--drift-tracking-wide);
+        color: var(--drift-text);
+        line-height: 1.1;
+      }
+
+      .drift-gc__badge {
+        display: inline-flex;
+        padding: 4px 12px;
+        border-radius: var(--drift-radius-full);
+        font-size: var(--drift-text-xs);
+        font-weight: var(--drift-weight-bold);
+        letter-spacing: var(--drift-tracking-caps);
+        text-transform: uppercase;
+        background-color: var(--drift-btn-primary-bg);
+        color: var(--drift-btn-primary-text);
+      }
+
+      .drift-gc__expiry {
+        font-size: var(--drift-text-sm);
+        color: var(--drift-text-muted);
+        text-align: center;
+      }
+
+      /* ----------------------------------------
+         Logo / Image
+         ---------------------------------------- */
+
+      .drift-gc__image-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 240px;
+      }
+
+      .drift-gc__image {
+        max-height: 160px;
+        object-fit: contain;
+      }
+
+      /* ----------------------------------------
+         Shop name
+         ---------------------------------------- */
+
+      .drift-gc__shop {
+        font-size: var(--drift-text-base);
+        font-weight: var(--drift-weight-bold);
+        letter-spacing: var(--drift-tracking-caps);
+        text-transform: uppercase;
+        color: var(--drift-text);
+        text-align: center;
+      }
+
+      /* ----------------------------------------
+         Instructions
+         ---------------------------------------- */
+
+      .drift-gc__instructions {
+        font-size: var(--drift-text-sm);
+        color: var(--drift-text-muted);
+        text-align: center;
+        max-width: 280px;
+        line-height: 1.5;
+      }
+
+      /* ----------------------------------------
+         Code
+         ---------------------------------------- */
+
+      .drift-gc__code {
+        font-size: var(--drift-text-md);
+        font-weight: var(--drift-weight-bold);
+        letter-spacing: 0.25em;
+        color: var(--drift-text);
+        text-align: center;
+        padding: var(--drift-space-2) var(--drift-space-3);
+        background-color: var(--drift-surface);
+        border: 1px solid var(--drift-border);
+        border-radius: var(--drift-radius-md);
+        user-select: all;
+        word-break: break-all;
+      }
+
+      /* ----------------------------------------
+         QR Code
+         ---------------------------------------- */
+
+      .drift-gc__qr {
+        display: flex;
+        justify-content: center;
+      }
+
+      .drift-gc__qr img {
+        border-radius: var(--drift-radius-sm);
+      }
+
+      /* Dark mode QR invert */
+      [data-drift-mode="dark"] .drift-gc__qr img {
+        filter: invert(1);
+      }
+
+      /* ----------------------------------------
+         Apple Wallet
+         ---------------------------------------- */
+
+      .drift-gc__wallet {
+        display: flex;
+        justify-content: center;
+      }
+
+      .drift-gc__wallet img {
+        height: 40px;
+        width: auto;
+      }
+
+      /* ----------------------------------------
+         Buttons
+         ---------------------------------------- */
+
+      .drift-gc__buttons {
+        display: flex;
+        flex-direction: column;
+        gap: var(--drift-space-1);
+        width: 100%;
+        max-width: 280px;
+      }
+
+      .drift-gc__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--drift-space-1);
+        padding: 14px var(--drift-space-3);
+        font-size: var(--drift-text-sm);
+        font-weight: var(--drift-weight-semibold);
+        letter-spacing: var(--drift-tracking-wide);
+        text-transform: uppercase;
+        border-radius: var(--drift-radius-sm);
+        transition: all var(--drift-duration-fast) var(--drift-ease);
+        min-height: 48px;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        text-decoration: none;
+      }
+
+      .drift-gc__btn--primary {
+        background-color: var(--drift-btn-primary-bg);
+        color: var(--drift-btn-primary-text);
+      }
+
+      .drift-gc__btn--primary:hover {
+        opacity: 0.85;
+      }
+
+      .drift-gc__btn--outline {
+        background: transparent;
+        color: var(--drift-btn-outline-text);
+        border: 1px solid var(--drift-btn-outline-border);
+      }
+
+      .drift-gc__btn--outline:hover {
+        border-color: var(--drift-text);
+      }
+
+      /* ----------------------------------------
+         Copy Success
+         ---------------------------------------- */
+
+      .drift-gc__copy-success {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: var(--drift-text-xs);
+        color: var(--drift-text-muted);
+        min-height: 20px;
+      }
+
+      .drift-gc__copy-success .svg-wrapper {
+        display: flex;
+        width: 14px;
+        height: 14px;
+      }
+
+      .drift-gc__copy-success svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ----------------------------------------
+         Print
+         ---------------------------------------- */
+
+      @media print {
+        .no-print {
+          display: none;
+        }
+
+        body {
+          background: white;
+          color: black;
+        }
+      }
+
+      /* ----------------------------------------
+         Focus
+         ---------------------------------------- */
+
+      :focus-visible {
+        outline: 2px solid var(--drift-text);
+        outline-offset: 2px;
+      }
+
+      :focus:not(:focus-visible) {
+        outline: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    {%- comment -%} Mode Toggle {%- endcomment -%}
+    <button class="drift-gc__toggle drift-glass no-print" type="button" aria-label="Toggle dark mode" onclick="
+      var el = document.documentElement;
+      el.setAttribute('data-drift-mode', el.getAttribute('data-drift-mode') === 'dark' ? 'light' : 'dark');
+    ">
+      <svg class="drift-gc__icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="drift-gc__icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+
+    <main class="drift-gc">
+      {%- comment -%} Title Pill {%- endcomment -%}
+      <span class="drift-gc__title-pill drift-glass">
+        <span class="drift-gc__title">{{ 'gift_cards.issued.subtext' | t | default: 'Gift Card' }}</span>
+      </span>
+
+      {%- comment -%} Card {%- endcomment -%}
+      <span class="drift-gc__card drift-glass">
+        {%- comment -%} Balance {%- endcomment -%}
+        <span class="drift-gc__balance">
+          <span class="drift-gc__amount">
+            {%- if settings.currency_code_enabled -%}
+              {{ gift_card.balance | money_with_currency }}
+            {%- else -%}
+              {{ gift_card.balance | money }}
+            {%- endif -%}
+          </span>
+          {%- if gift_card.enabled == false or gift_card.expired -%}
+            <span class="drift-gc__badge">{{ 'gift_cards.issued.expired' | t }}</span>
+          {%- endif -%}
+        </span>
+
+        {%- if gift_card.expires_on -%}
+          {%- assign gift_card_expiration_date = gift_card.expires_on | date: '%B %e, %Y' -%}
+          <p class="drift-gc__expiry">
+            {{ 'gift_cards.issued.expiration_date' | t: expires_on: gift_card_expiration_date }}
+          </p>
+        {%- endif -%}
+
+        {%- comment -%} Logo / Image {%- endcomment -%}
+        <span class="drift-gc__image-wrap">
+          {%- if settings.logo != blank -%}
+            {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
+            {{ settings.logo | image_url: width: 570 | image_tag: class: 'drift-gc__image', alt: logo_alt }}
+          {%- else -%}
+            <img
+              class="drift-gc__image"
+              src="{{ 'gift-card/card.svg' | shopify_asset_url }}"
+              alt=""
+              height="380"
+              width="570"
+              loading="eager"
+            >
+          {%- endif -%}
+        </span>
+
+        {%- comment -%} Shop Name {%- endcomment -%}
+        <p class="drift-gc__shop">{{ shop.name }}</p>
+
+        {%- comment -%} Instructions {%- endcomment -%}
+        <p class="drift-gc__instructions">{{ 'gift_cards.issued.how_to_use_gift_card' | t }}</p>
+
+        {%- comment -%} Code {%- endcomment -%}
+        <span class="drift-gc__code" id="gift-card-code">{{ gift_card.code | format_code }}</span>
+
+        {%- comment -%} QR Code {%- endcomment -%}
+        <span class="drift-gc__qr" data-identifier="{{ gift_card.qr_identifier }}"></span>
+
+        {%- comment -%} Apple Wallet {%- endcomment -%}
+        {%- if gift_card.pass_url -%}
+          <a href="{{ gift_card.pass_url }}" class="drift-gc__wallet no-print">
+            <img
+              src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}"
+              width="120"
+              height="40"
+              alt="{{ 'gift_cards.issued.add_to_apple_wallet' | t }}"
+              loading="lazy"
+            >
+          </a>
+        {%- endif -%}
+
+        {%- comment -%} Buttons {%- endcomment -%}
+        <span class="drift-gc__buttons no-print">
+          <span class="drift-gc__copy-success" role="status"></span>
+          <template>
+            <span class="svg-wrapper">
+              {{- 'icon-success.svg' | inline_asset_content -}}
+            </span>
+            {{ 'gift_cards.issued.copy_code_success' | t }}
+          </template>
+          <button class="drift-gc__btn drift-gc__btn--primary drift-gc__copy-btn">
+            {{ 'gift_cards.issued.copy_code' | t }}
+          </button>
+          <a
+            href="{{ shop.url }}"
+            class="drift-gc__btn drift-gc__btn--outline"
+            target="_blank"
+            rel="noopener"
+            aria-describedby="a11y-new-window-message"
+          >
+            {{ 'gift_cards.issued.shop_link' | t }}
+          </a>
+        </span>
+      </span>
+    </main>
+
+    <span hidden>
+      <span id="a11y-new-window-message">{{ 'accessibility.link_messages.new_window' | t }}</span>
+    </span>
+  </body>
+</html>
+
+<script>
+  /* QR Code */
+  var string = { qrImageAlt: {{ 'gift_cards.issued.qr_image_alt' | t | json }} };
+  document.addEventListener('DOMContentLoaded', function () {
+    new QRCode(document.querySelector('.drift-gc__qr'), {
+      text: document.querySelector('.drift-gc__qr').dataset.identifier,
+      width: 72,
+      height: 72,
+      imageAltText: string.qrImageAlt,
+    });
+  });
+
+  /* Copy Code */
+  var template = document.getElementsByTagName('template')[0];
+  var clonedTemplate = template.content.cloneNode(true);
+  var isMessageDisplayed = false;
+  document.querySelector('.drift-gc__copy-btn').addEventListener('click', function () {
+    navigator.clipboard
+      .writeText(document.getElementById('gift-card-code').innerText)
+      .then(function () {
+        if (!isMessageDisplayed) {
+          document.querySelector('.drift-gc__copy-success').appendChild(clonedTemplate);
+          isMessageDisplayed = true;
+        }
+      });
+  });
+</script>

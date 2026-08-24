@@ -1,0 +1,204 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Cart Page — Fallback for /cart direct visits
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-cart-page" data-section-type="drift-cart-page">
+  <span class="drift-cart-page__container drift-container">
+    <span class="drift-cart-page__card drift-glass">
+
+      {%- if cart.item_count == 0 -%}
+
+        {%- comment -%} Empty state {%- endcomment -%}
+        <span class="drift-cart-page__empty">
+          <span class="drift-cart-page__empty-text">Your cart is empty</span>
+          <a href="{{ routes.all_products_collection_url }}" class="drift-btn drift-btn--primary">
+            Continue Shopping
+          </a>
+        </span>
+
+      {%- else -%}
+
+        {%- comment -%} Header {%- endcomment -%}
+        <span class="drift-cart-page__header">
+          <span class="drift-cart-page__title">Cart</span>
+          <a href="{{ routes.all_products_collection_url }}" class="drift-cart-page__continue">
+            Continue Shopping
+          </a>
+        </span>
+
+        <span class="drift-cart__sep"></span>
+
+        {%- comment -%} Line items {%- endcomment -%}
+        <span class="drift-cart-page__items">
+          {%- for item in cart.items -%}
+            <span class="drift-cart__item">
+              {%- comment -%} Image {%- endcomment -%}
+              <a href="{{ item.url }}" class="drift-cart__item-img-wrap">
+                {%- if item.image -%}
+                  <img
+                    class="drift-cart__item-img"
+                    src="{{ item.image | image_url: width: 160 }}"
+                    alt="{{ item.image.alt | default: item.product.title | escape }}"
+                    loading="lazy"
+                    width="80"
+                    height="80"
+                  >
+                {%- endif -%}
+              </a>
+
+              {%- comment -%} Details {%- endcomment -%}
+              <span class="drift-cart__item-details">
+                <span class="drift-cart__item-title-row">
+                  <a href="{{ item.url }}" class="drift-cart__item-title">
+                    {{ item.product.title | escape }}
+                  </a>
+                  <span class="drift-cart__item-price">
+                    {{ item.final_line_price | money }}
+                  </span>
+                </span>
+
+                {%- if item.product.has_only_default_variant == false -%}
+                  <span class="drift-cart__item-variants">
+                    {%- for option in item.options_with_values -%}
+                      <span>{{ option.value }}</span>
+                    {%- endfor -%}
+                  </span>
+                {%- endif -%}
+
+                <span class="drift-cart__item-actions">
+                  <span class="drift-cart__qty">
+                    <span class="drift-cart__qty-label">QTY</span>
+                    <button
+                      class="drift-cart__qty-btn"
+                      data-cart-page-qty="minus"
+                      data-line="{{ forloop.index }}"
+                      data-qty="{{ item.quantity }}"
+                      aria-label="Decrease quantity"
+                      {% if item.quantity <= 1 %}disabled{% endif %}
+                    >−</button>
+                    <span class="drift-cart__qty-count">{{ item.quantity }}</span>
+                    <button
+                      class="drift-cart__qty-btn"
+                      data-cart-page-qty="plus"
+                      data-line="{{ forloop.index }}"
+                      data-qty="{{ item.quantity }}"
+                      aria-label="Increase quantity"
+                    >+</button>
+                  </span>
+                  <button
+                    class="drift-cart__delete"
+                    data-cart-page-remove
+                    data-line="{{ forloop.index }}"
+                    aria-label="Remove {{ item.product.title | escape }}"
+                  >Delete</button>
+                </span>
+              </span>
+            </span>
+          {%- endfor -%}
+        </span>
+
+        <span class="drift-cart__sep"></span>
+
+        {%- comment -%} Footer — totals + checkout {%- endcomment -%}
+        <span class="drift-cart-page__footer">
+          <span class="drift-cart__totals">
+            <span class="drift-cart__totals-row">
+              <span class="drift-cart__totals-label">Shipping</span>
+              <span class="drift-cart__totals-value drift-muted">Calculated at checkout</span>
+            </span>
+            <span class="drift-cart__totals-row">
+              <span class="drift-cart__totals-label">Subtotal</span>
+              <span class="drift-cart__totals-value">{{ cart.total_price | money }}</span>
+            </span>
+          </span>
+
+          <form action="/checkout" method="post">
+            <button type="submit" class="drift-btn drift-btn--primary drift-cart__checkout">
+              Checkout
+            </button>
+          </form>
+
+          {%- if additional_checkout_buttons and settings.cart_show_dynamic_buttons -%}
+            <span class="drift-cart__dynamic-buttons">
+              <form action="{{ routes.cart_url }}" method="post">
+                {{ content_for_additional_checkout_buttons }}
+              </form>
+            </span>
+          {%- endif -%}
+        </span>
+
+      {%- endif -%}
+
+    </span>
+  </span>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  var section = document.querySelector('[data-section-type="drift-cart-page"]');
+  if (!section) return;
+
+  /* Qty + remove buttons */
+  section.addEventListener('click', function (e) {
+    var qtyBtn = e.target.closest('[data-cart-page-qty]');
+    var removeBtn = e.target.closest('[data-cart-page-remove]');
+
+    if (qtyBtn) {
+      var line = parseInt(qtyBtn.getAttribute('data-line'), 10);
+      var qty = parseInt(qtyBtn.getAttribute('data-qty'), 10);
+      var action = qtyBtn.getAttribute('data-cart-page-qty');
+      var newQty = action === 'plus' ? qty + 1 : qty - 1;
+      if (newQty < 0) newQty = 0;
+      updateLine(line, newQty);
+    }
+
+    if (removeBtn) {
+      var line = parseInt(removeBtn.getAttribute('data-line'), 10);
+      updateLine(line, 0);
+    }
+  });
+
+  function updateLine(line, qty) {
+    fetch('/cart/change.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ line: line, quantity: qty })
+    })
+      .then(function () {
+        window.location.reload();
+      })
+      .catch(function () {
+        window.location.reload();
+      });
+  }
+
+  /* Show scrollbar on hover */
+  var items = section.querySelector('.drift-cart-page__items');
+  if (items) {
+    items.addEventListener('mouseenter', function () {
+      items.classList.add('is-hovering');
+    });
+    items.addEventListener('mouseleave', function () {
+      items.classList.remove('is-hovering');
+    });
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "DRIFT Cart Page",
+  "tag": "section",
+  "class": "drift-cart-page-section",
+  "settings": []
+}
+{% endschema %}

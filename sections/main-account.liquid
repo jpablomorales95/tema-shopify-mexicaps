@@ -1,0 +1,96 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Customer Account — Replaces Dawn's main-account.liquid
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-customer" data-section-type="drift-customer-account">
+  <span class="drift-customer__container drift-container">
+    <span class="drift-customer__stack drift-customer__stack--wide">
+
+      <span class="drift-customer__title-card drift-glass">
+        <span class="drift-customer__title">{{ 'customer.account.title' | t }}</span>
+        <a href="{{ routes.account_logout_url }}" class="drift-customer__title-action">
+          {{ 'customer.log_out' | t }}
+        </a>
+      </span>
+
+      {%- comment -%} Orders {%- endcomment -%}
+      <span class="drift-customer__card drift-glass">
+        <span class="drift-customer__label">{{ 'customer.orders.title' | t }}</span>
+
+        {% paginate customer.orders by 20 %}
+          {%- if customer.orders.size > 0 -%}
+            <table class="drift-customer__table" role="table">
+              <thead>
+                <tr>
+                  <th>{{ 'customer.orders.order_number' | t }}</th>
+                  <th>{{ 'customer.orders.date' | t }}</th>
+                  <th>{{ 'customer.orders.payment_status' | t }}</th>
+                  <th>{{ 'customer.orders.fulfillment_status' | t }}</th>
+                  <th>{{ 'customer.orders.total' | t }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for order in customer.orders -%}
+                  <tr>
+                    <td data-label="{{ 'customer.orders.order_number' | t }}">
+                      <a href="{{ order.customer_url }}">{{ order.name }}</a>
+                    </td>
+                    <td data-label="{{ 'customer.orders.date' | t }}">
+                      {{ order.created_at | time_tag: format: 'date' }}
+                    </td>
+                    <td data-label="{{ 'customer.orders.payment_status' | t }}">
+                      {{ order.financial_status_label }}
+                    </td>
+                    <td data-label="{{ 'customer.orders.fulfillment_status' | t }}">
+                      {{ order.fulfillment_status_label }}
+                    </td>
+                    <td data-label="{{ 'customer.orders.total' | t }}">
+                      {{ order.total_net_amount | money_with_currency }}
+                    </td>
+                  </tr>
+                {%- endfor -%}
+              </tbody>
+            </table>
+
+            {%- if paginate.pages > 1 -%}
+              <span class="drift-search__pagination">
+                {%- if paginate.previous -%}
+                  <a href="{{ paginate.previous.url }}" class="drift-btn drift-btn--ghost drift-search__page-btn">← Previous</a>
+                {%- endif -%}
+                <span class="drift-search__page-info">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+                {%- if paginate.next -%}
+                  <a href="{{ paginate.next.url }}" class="drift-btn drift-btn--ghost drift-search__page-btn">Next →</a>
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+          {%- else -%}
+            <span class="drift-customer__empty">{{ 'customer.orders.none' | t }}</span>
+          {%- endif -%}
+        {% endpaginate %}
+      </span>
+
+      {%- comment -%} Account details {%- endcomment -%}
+      <span class="drift-customer__card drift-glass">
+        <span class="drift-customer__label">{{ 'customer.account.details' | t }}</span>
+        <span class="drift-customer__details">
+          {{ customer.default_address | format_address }}
+        </span>
+        <a href="{{ routes.account_addresses_url }}" class="drift-customer__link">
+          {{ 'customer.account.view_addresses' | t }} ({{ customer.addresses_count }})
+        </a>
+      </span>
+
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main-account.name",
+  "settings": []
+}
+{% endschema %}

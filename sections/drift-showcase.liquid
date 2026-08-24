@@ -1,0 +1,296 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Showcase — Featured Collection Marquee
+  V3: Auto-scrolling product strip
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign id = section.id
+  assign collection = section.settings.collection
+  assign heading = section.settings.heading
+  assign speed = section.settings.speed
+  assign direction = section.settings.direction
+  assign limit = section.settings.product_limit
+  assign full_width = section.settings.full_width
+  assign show_info = section.settings.show_product_info
+-%}
+
+<section class="drift-showcase" data-drift-showcase data-showcase-id="{{ id }}">
+
+  {%- if heading != blank -%}
+    <h2 class="drift-showcase__heading">{{ heading }}</h2>
+  {%- endif -%}
+
+  {%- if collection != blank and collection.products.size > 0 -%}
+    <span class="drift-showcase__overflow{% unless full_width %} drift-showcase__overflow--contained{% endunless %}">
+      <span class="drift-showcase__track" data-showcase-track style="--showcase-speed: {{ speed }}s; --showcase-direction: {% if direction == 'right' %}reverse{% else %}normal{% endif %};">
+
+        {%- comment -%} Original set {%- endcomment -%}
+        <span class="drift-showcase__set">
+          {%- for product in collection.products limit: limit -%}
+            <a href="{{ product.url }}" class="drift-showcase__card drift-glass">
+              <span class="drift-showcase__card-img-wrap">
+                {%- if product.featured_image != blank -%}
+                  <img
+                    class="drift-showcase__card-img"
+                    src="{{ product.featured_image | image_url: width: 600 }}"
+                    alt="{{ product.title | escape }}"
+                    width="300"
+                    height="300"
+                    loading="lazy"
+                    draggable="false"
+                  >
+                {%- endif -%}
+              </span>
+              {%- if show_info -%}
+                <span class="drift-showcase__card-info">
+                  <span class="drift-showcase__card-title">{{ product.title }}</span>
+                  <span class="drift-showcase__card-price">{{ product.price | money }}</span>
+                </span>
+              {%- endif -%}
+            </a>
+          {%- endfor -%}
+        </span>
+
+        {%- comment -%} Duplicate for seamless loop {%- endcomment -%}
+        <span class="drift-showcase__set" aria-hidden="true">
+          {%- for product in collection.products limit: limit -%}
+            <a href="{{ product.url }}" class="drift-showcase__card drift-glass" tabindex="-1">
+              <span class="drift-showcase__card-img-wrap">
+                {%- if product.featured_image != blank -%}
+                  <img
+                    class="drift-showcase__card-img"
+                    src="{{ product.featured_image | image_url: width: 600 }}"
+                    alt=""
+                    width="300"
+                    height="300"
+                    loading="lazy"
+                    draggable="false"
+                  >
+                {%- endif -%}
+              </span>
+              {%- if show_info -%}
+                <span class="drift-showcase__card-info">
+                  <span class="drift-showcase__card-title">{{ product.title }}</span>
+                  <span class="drift-showcase__card-price">{{ product.price | money }}</span>
+                </span>
+              {%- endif -%}
+            </a>
+          {%- endfor -%}
+        </span>
+
+      </span>
+    </span>
+  {%- else -%}
+    <span class="drift-showcase__empty">Select a collection to display products</span>
+  {%- endif -%}
+
+</section>
+
+<style>
+  /* ============================================
+     Showcase — Featured Collection Marquee
+     ============================================ */
+
+  .drift-showcase {
+    padding: var(--drift-space-4) 0;
+    overflow: hidden;
+  }
+
+  .drift-showcase__heading {
+    font-size: var(--drift-text-lg);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--drift-text);
+    text-align: center;
+    margin-bottom: var(--drift-space-4);
+    padding: 0 var(--drift-space-2);
+  }
+  @media (min-width: 1024px) {
+    .drift-showcase__heading { font-size: var(--drift-text-xl); }
+  }
+
+  /* ── Overflow wrapper ── */
+  .drift-showcase__overflow {
+    display: block;
+    overflow: hidden;
+  }
+  .drift-showcase__overflow--contained {
+    max-width: var(--drift-content-max, 1200px);
+    margin: 0 auto;
+    border-radius: var(--drift-radius-md, 12px);
+  }
+
+  /* ── Track ── */
+  .drift-showcase__track {
+    display: flex;
+    width: max-content;
+    animation: drift-showcase-scroll var(--showcase-speed, 30s) linear infinite var(--showcase-direction, normal);
+  }
+
+  .drift-showcase__track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes drift-showcase-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── Set ── */
+  .drift-showcase__set {
+    display: flex;
+    gap: var(--drift-space-2);
+    padding-right: var(--drift-space-2);
+    flex-shrink: 0;
+  }
+
+  /* ── Card ── */
+  .drift-showcase__card {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    flex-shrink: 0;
+    padding: var(--drift-space-1);
+    border-radius: var(--drift-radius-md, 12px);
+    text-decoration: none;
+    transition: transform 0.2s ease;
+  }
+
+  .drift-showcase__card:hover {
+    transform: scale(1.03);
+  }
+
+  @media (min-width: 1024px) {
+    .drift-showcase__card {
+      width: 220px;
+    }
+  }
+
+  /* ── Card image ── */
+  .drift-showcase__card-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--drift-radius-sm, 8px);
+    overflow: hidden;
+  }
+
+  .drift-showcase__card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── Card info ── */
+  .drift-showcase__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: var(--drift-space-1);
+  }
+
+  .drift-showcase__card-title {
+    font-size: var(--drift-text-sm);
+    font-weight: 600;
+    color: var(--drift-text);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .drift-showcase__card-price {
+    font-size: var(--drift-text-xs);
+    color: var(--drift-text);
+    opacity: 0.5;
+  }
+
+  /* ── Empty state ── */
+  .drift-showcase__empty {
+    display: block;
+    text-align: center;
+    font-size: var(--drift-text-sm);
+    color: var(--drift-text);
+    opacity: 0.3;
+    padding: var(--drift-space-6) var(--drift-space-2);
+  }
+</style>
+
+{% schema %}
+{
+  "name": "DRIFT Showcase",
+  "class": "drift-section-showcase",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Showcase"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "product_limit",
+      "label": "Products to show",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Scroll speed",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "default": 30,
+      "unit": "s",
+      "info": "Lower = faster. Duration for one full loop."
+    },
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Scroll direction",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "default": true,
+      "info": "When enabled, the marquee spans edge-to-edge. Otherwise it's contained within the content width."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_info",
+      "label": "Show product info",
+      "default": true,
+      "info": "Display product title and price below the image."
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Showcase"
+    }
+  ]
+}
+{% endschema %}

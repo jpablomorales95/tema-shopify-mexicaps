@@ -1,0 +1,82 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Rich Text Section
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-rich-text">
+  <span class="drift-rich-text__container">
+    <span class="drift-rich-text__card drift-glass drift-rich-text--{{ section.settings.alignment }}">
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="drift-rich-text__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.body != blank -%}
+        <span class="drift-rich-text__body rte">{{ section.settings.body }}</span>
+      {%- endif -%}
+
+      {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+        <a
+          href="{{ section.settings.button_link }}"
+          class="drift-btn drift-btn--primary drift-rich-text__btn"
+        >
+          {{ section.settings.button_label }}
+        </a>
+      {%- endif -%}
+
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "Rich Text",
+  "class": "drift-section-rich-text",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Our Story"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body text",
+      "default": "<p>Share your brand story, mission, or any content that connects with your audience. This section supports rich text formatting.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rich Text"
+    }
+  ]
+}
+{% endschema %}

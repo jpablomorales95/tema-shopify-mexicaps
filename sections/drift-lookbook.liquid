@@ -1,0 +1,612 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Lookbook — Shop Hotspots
+  V3: Single image with shoppable product dots
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign id = section.id
+  assign image = section.settings.image
+-%}
+
+<section class="drift-lookbook" data-drift-lookbook data-lookbook-id="{{ id }}">
+
+  {%- if section.settings.heading != blank -%}
+    <h2 class="drift-lookbook__heading">{{ section.settings.heading }}</h2>
+  {%- endif -%}
+
+  <span class="drift-lookbook__wrap">
+    <span class="drift-lookbook__scroll">
+
+      {%- if image != blank -%}
+        <img
+          class="drift-lookbook__img"
+          src="{{ image | image_url: width: 2400 }}"
+          srcset="
+            {{ image | image_url: width: 1200 }} 1200w,
+            {{ image | image_url: width: 1800 }} 1800w,
+            {{ image | image_url: width: 2400 }} 2400w
+          "
+          sizes="100vw"
+          alt="{{ image.alt | default: section.settings.heading | escape }}"
+          loading="lazy"
+          draggable="false"
+        >
+      {%- else -%}
+        <span class="drift-lookbook__placeholder">Upload a lookbook image and add product hotspots</span>
+      {%- endif -%}
+
+      {%- comment -%} Hotspots {%- endcomment -%}
+      {%- for block in section.blocks -%}
+        {%- if block.settings.product != blank -%}
+          {%- liquid
+            assign p = block.settings.product
+            assign pos_x = block.settings.position_x
+            assign pos_y = block.settings.position_y
+            assign first_variant = p.variants | first
+            assign has_multi_variants = false
+            if p.variants.size > 1
+              assign has_multi_variants = true
+            endif
+          -%}
+
+          <span
+            class="drift-lookbook__hotspot"
+            style="left: {{ pos_x }}%; top: {{ pos_y }}%;"
+            {{ block.shopify_attributes }}
+          >
+            <button
+              class="drift-lookbook__dot"
+              data-lookbook-dot="{{ forloop.index0 }}"
+              type="button"
+              aria-label="View {{ p.title | escape }}"
+            >
+              <span class="drift-lookbook__dot-ping"></span>
+              <span class="drift-lookbook__dot-core"></span>
+            </button>
+          </span>
+
+          {%- comment -%} Card rendered outside scroll container, positioned via JS {%- endcomment -%}
+          <template data-lookbook-tpl="{{ forloop.index0 }}">
+            <span class="drift-lookbook__card drift-glass" data-lookbook-card="{{ forloop.index0 }}">
+
+              <span class="drift-lookbook__card-img-wrap">
+                {%- if p.featured_image != blank -%}
+                  <img
+                    class="drift-lookbook__card-img"
+                    src="{{ p.featured_image | image_url: width: 400 }}"
+                    alt="{{ p.title | escape }}"
+                    width="200"
+                    height="200"
+                    loading="lazy"
+                    draggable="false"
+                  >
+                {%- endif -%}
+              </span>
+
+              <span class="drift-lookbook__card-info">
+                <a href="{{ p.url }}" class="drift-lookbook__card-title">{{ p.title }}</a>
+                <span class="drift-lookbook__card-price">{{ first_variant.price | money }}</span>
+
+                {%- if has_multi_variants -%}
+                  <a href="{{ p.url }}" class="drift-btn drift-btn--primary drift-lookbook__card-btn">View Options</a>
+                {%- else -%}
+                  <button
+                    class="drift-btn drift-btn--primary drift-lookbook__card-btn{% unless first_variant.available %} drift-lookbook__card-btn--sold-out{% endunless %}"
+                    data-lookbook-add="{{ first_variant.id }}"
+                    type="button"
+                    {% unless first_variant.available %}disabled{% endunless %}
+                  >
+                    {%- if first_variant.available -%}
+                      {{ 'products.product.add_to_cart' | t }}
+                    {%- else -%}
+                      {{ 'products.product.sold_out' | t }}
+                    {%- endif -%}
+                  </button>
+                {%- endif -%}
+              </span>
+
+              <button class="drift-lookbook__card-close" data-lookbook-close type="button" aria-label="Close">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </span>
+          </template>
+
+        {%- endif -%}
+      {%- endfor -%}
+
+    </span>
+  </span>
+</section>
+
+<style>
+  /* ============================================
+     Lookbook
+     ============================================ */
+
+  .drift-lookbook {
+    padding: var(--drift-space-3) 0;
+  }
+
+  .drift-lookbook__heading {
+    font-size: var(--drift-text-lg);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--drift-text);
+    text-align: center;
+    margin-bottom: var(--drift-space-4);
+    padding: 0 var(--drift-space-2);
+  }
+  @media (min-width: 1024px) {
+    .drift-lookbook__heading { font-size: var(--drift-text-xl); }
+  }
+
+  /* ── Wrap ── */
+  .drift-lookbook__wrap {
+    display: block;
+    max-width: var(--drift-content-max, 1200px);
+    margin: 0 auto;
+    padding: 0 var(--drift-space-2);
+  }
+
+  @media (min-width: 1024px) {
+    .drift-lookbook__wrap {
+      max-width: 800px;
+    }
+  }
+
+  /* ── Scroll container ── */
+  .drift-lookbook__scroll {
+    display: block;
+    position: relative;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--drift-radius-md, 12px);
+  }
+
+  /* Hide scrollbar */
+  .drift-lookbook__scroll::-webkit-scrollbar { display: none; }
+  .drift-lookbook__scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── Image ── */
+  .drift-lookbook__img {
+    display: block;
+    width: auto;
+    min-width: 100%;
+    height: auto;
+    border-radius: var(--drift-radius-md, 12px);
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  @media (min-width: 1024px) {
+    .drift-lookbook__img {
+      min-width: 0;
+      width: 100%;
+    }
+  }
+
+  /* ── Placeholder ── */
+  .drift-lookbook__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    min-width: 100%;
+    font-size: var(--drift-text-sm);
+    color: var(--drift-text);
+    opacity: 0.3;
+    text-align: center;
+    padding: var(--drift-space-4);
+  }
+
+  /* ── Hotspot ── */
+  .drift-lookbook__hotspot {
+    position: absolute;
+    z-index: 10;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ── Dot ── */
+  .drift-lookbook__dot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .drift-lookbook__dot-core {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+  }
+
+  .drift-lookbook__dot-ping {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    animation: drift-lookbook-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes drift-lookbook-ping {
+    0% { transform: scale(0.5); opacity: 1; }
+    75%, 100% { transform: scale(1); opacity: 0; }
+  }
+
+  .drift-lookbook__dot:hover .drift-lookbook__dot-core {
+    transform: scale(1.15);
+    transition: transform 0.2s ease;
+  }
+
+  /* ── Card (fixed, positioned via JS) ── */
+  .drift-lookbook__card {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    padding: var(--drift-space-2);
+    border-radius: var(--drift-radius-md, 12px);
+    width: 180px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: var(--drift-z-modal, 400);
+  }
+
+  .drift-lookbook__card.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ── Card image ── */
+  .drift-lookbook__card-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--drift-radius-sm, 8px);
+    overflow: hidden;
+  }
+
+  .drift-lookbook__card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── Card info ── */
+  .drift-lookbook__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: var(--drift-space-1);
+    width: 100%;
+  }
+
+  .drift-lookbook__card-title {
+    font-size: var(--drift-text-sm);
+    font-weight: 600;
+    color: var(--drift-text);
+    text-decoration: none;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .drift-lookbook__card-title:hover { text-decoration: underline; }
+
+  .drift-lookbook__card-price {
+    font-size: var(--drift-text-xs);
+    color: var(--drift-text);
+    opacity: 0.5;
+  }
+
+  .drift-lookbook__card-btn {
+    font-size: var(--drift-text-xs);
+    padding: 6px 12px;
+    margin-top: 4px;
+    min-height: 32px;
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+  }
+
+  .drift-lookbook__card-btn--sold-out {
+    background: rgba(128, 128, 128, 0.2);
+    color: var(--drift-text);
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: transparent;
+  }
+
+  /* ── Card close ── */
+  .drift-lookbook__card-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--drift-text);
+    opacity: 0.4;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .drift-lookbook__card-close:hover { opacity: 0.8; }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  var section = document.querySelector('[data-lookbook-id="{{ id }}"]');
+  if (!section) return;
+
+  var dots = section.querySelectorAll('[data-lookbook-dot]');
+  var activeCard = null;
+  var GAP = 12;
+  var EDGE_PAD = 8;
+
+  function closeAll() {
+    if (activeCard) {
+      activeCard.classList.remove('is-visible');
+      var removing = activeCard;
+      activeCard = null;
+      setTimeout(function () {
+        if (!removing.classList.contains('is-visible')) {
+          removing.remove();
+        }
+      }, 200);
+    }
+  }
+
+  function positionCard(card, dot) {
+    /* Reset so we can measure natural size */
+    card.style.left = '0';
+    card.style.top = '0';
+    card.style.transform = 'none';
+
+    var dotRect = dot.getBoundingClientRect();
+    var dotCX = dotRect.left + dotRect.width / 2;
+    var dotTop = dotRect.top;
+    var dotBottom = dotRect.bottom;
+    var cardW = card.offsetWidth;
+    var cardH = card.offsetHeight;
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+
+    /* Vertical: prefer above dot, flip below if not enough room */
+    var top;
+    if (dotTop - GAP - cardH >= EDGE_PAD) {
+      top = dotTop - GAP - cardH;
+    } else {
+      top = dotBottom + GAP;
+    }
+
+    /* Horizontal: center on dot, clamp to viewport edges */
+    var left = dotCX - cardW / 2;
+    if (left < EDGE_PAD) left = EDGE_PAD;
+    if (left + cardW > vw - EDGE_PAD) left = vw - EDGE_PAD - cardW;
+
+    /* If card would overflow bottom after flip, clamp to bottom */
+    if (top + cardH > vh - EDGE_PAD) top = vh - EDGE_PAD - cardH;
+    if (top < EDGE_PAD) top = EDGE_PAD;
+
+    card.style.left = left + 'px';
+    card.style.top = top + 'px';
+  }
+
+  function openCard(index, dot) {
+    closeAll();
+
+    var tpl = section.querySelector('[data-lookbook-tpl="' + index + '"]');
+    if (!tpl) return;
+
+    var card = tpl.content.cloneNode(true).firstElementChild;
+    document.body.appendChild(card);
+
+    positionCard(card, dot);
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        card.classList.add('is-visible');
+      });
+    });
+
+    /* Close button */
+    var closeBtn = card.querySelector('[data-lookbook-close]');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeAll();
+      });
+    }
+
+    /* Quick-add button */
+    var addBtn = card.querySelector('[data-lookbook-add]');
+    if (addBtn) {
+      addBtn.addEventListener('click', function () {
+        if (addBtn.disabled) return;
+        var variantId = addBtn.getAttribute('data-lookbook-add');
+        if (!variantId) return;
+
+        addBtn.disabled = true;
+        var origText = addBtn.textContent;
+        addBtn.textContent = '...';
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ id: parseInt(variantId, 10), quantity: 1 })
+        })
+          .then(function (r) { return r.json(); })
+          .then(function () {
+            addBtn.textContent = 'Added ✓';
+            document.dispatchEvent(new CustomEvent('cart:updated'));
+            setTimeout(function () {
+              closeAll();
+            }, 1000);
+          })
+          .catch(function () {
+            addBtn.textContent = origText;
+            addBtn.disabled = false;
+          });
+      });
+    }
+
+    activeCard = card;
+  }
+
+  /* Dot clicks */
+  dots.forEach(function (dot) {
+    dot.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var idx = dot.getAttribute('data-lookbook-dot');
+      if (activeCard && activeCard.getAttribute('data-lookbook-card') === idx) {
+        closeAll();
+      } else {
+        openCard(idx, dot);
+      }
+    });
+  });
+
+  /* Click outside to close */
+  document.addEventListener('click', function (e) {
+    if (!activeCard) return;
+    if (e.target.closest('.drift-lookbook__card') || e.target.closest('.drift-lookbook__dot')) return;
+    closeAll();
+  });
+
+  /* Escape to close */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && activeCard) closeAll();
+  });
+
+  /* Reposition on scroll/resize */
+  function reposition() {
+    if (!activeCard) return;
+    var idx = activeCard.getAttribute('data-lookbook-card');
+    var dot = section.querySelector('[data-lookbook-dot="' + idx + '"]');
+    if (dot) positionCard(activeCard, dot);
+  }
+
+  var scrollEl = section.querySelector('.drift-lookbook__scroll');
+  if (scrollEl) scrollEl.addEventListener('scroll', function () {
+    if (activeCard) closeAll();
+  }, { passive: true });
+  window.addEventListener('resize', reposition, { passive: true });
+  window.addEventListener('scroll', function () {
+    if (!activeCard) return;
+    var idx = activeCard.getAttribute('data-lookbook-card');
+    var dot = section.querySelector('[data-lookbook-dot="' + idx + '"]');
+    if (!dot) { closeAll(); return; }
+    var rect = dot.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight) {
+      closeAll();
+    } else {
+      reposition();
+    }
+  }, { passive: true });
+
+})();
+</script>
+
+{% schema %}
+{
+  "name": "DRIFT Lookbook",
+  "class": "drift-section-lookbook",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Lookbook"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Lookbook image",
+      "info": "Use a wide, high-resolution image. The image displays at its natural size and scrolls horizontally if wider than the viewport."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "hotspot",
+      "name": "Hotspot",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "range",
+          "id": "position_x",
+          "label": "Horizontal position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 50,
+          "unit": "%",
+          "info": "0% = left edge, 100% = right edge"
+        },
+        {
+          "type": "range",
+          "id": "position_y",
+          "label": "Vertical position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 50,
+          "unit": "%",
+          "info": "0% = top edge, 100% = bottom edge"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Lookbook",
+      "blocks": [
+        { "type": "hotspot" },
+        { "type": "hotspot" },
+        { "type": "hotspot" }
+      ]
+    }
+  ]
+}
+{% endschema %}

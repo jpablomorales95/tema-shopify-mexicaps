@@ -1,0 +1,455 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC — custom section
+  Store Locator — rotating globe + Google Maps
+  Add stores as blocks from the theme editor.
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign heading = section.settings.heading | default: 'Encuentra tu tienda MEXICAPS más cercana'
+  assign subheading = section.settings.subheading
+  assign enable_locate = section.settings.enable_locate_me
+  assign map_zoom = section.settings.map_zoom | default: 13
+  assign map_style_setting = section.settings.map_style | default: 'auto'
+
+  assign cta_heading = section.settings.cta_heading
+  assign cta_text = section.settings.cta_text
+  assign cta_button_label = section.settings.cta_button_label
+  assign cta_button_url = section.settings.cta_button_url
+  assign cta_image = section.settings.cta_image
+
+  assign store_blocks = section.blocks | where: 'type', 'store'
+  assign store_count = store_blocks.size
+
+  comment
+    Build a de-duplicated city list (classic Shopify Liquid trick)
+  endcomment
+  assign city_list = ''
+  for block in store_blocks
+    assign c = block.settings.city | strip
+    if c != blank
+      unless city_list contains c
+        assign city_list = city_list | append: c | append: '||'
+      endunless
+    endif
+  endfor
+  assign cities = city_list | split: '||'
+-%}
+
+<section
+  class="drift-locator"
+  data-drift-locator
+  data-section-id="{{ section.id }}"
+  data-map-zoom="{{ map_zoom }}"
+  data-map-style="{{ map_style_setting }}"
+>
+
+  <div class="drift-locator__grid">
+
+    {%- comment -%} LEFT — globe {%- endcomment -%}
+    <div class="drift-locator__col drift-locator__col--globe">
+
+      <div class="drift-locator__eyebrow">
+        <span class="drift-locator__dot" aria-hidden="true"></span>
+        <span>Tiendas autorizadas</span>
+      </div>
+
+      <div>
+        <h2 class="drift-locator__heading">{{ heading }}</h2>
+        {%- if subheading != blank -%}
+          <p class="drift-locator__subheading">{{ subheading }}</p>
+        {%- endif -%}
+      </div>
+
+      {%- if enable_locate -%}
+        <button type="button" class="drift-locator__locate-btn" data-locator-locate>
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="10" cy="10" r="2.4" fill="currentColor"></circle>
+            <g stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+              <line x1="10" y1="1" x2="10" y2="4.2"></line>
+              <line x1="10" y1="15.8" x2="10" y2="19"></line>
+              <line x1="1" y1="10" x2="4.2" y2="10"></line>
+              <line x1="15.8" y1="10" x2="19" y2="10"></line>
+            </g>
+          </svg>
+          Mi ubicación
+        </button>
+      {%- endif -%}
+
+      <div class="drift-locator__globe-wrap" aria-hidden="true">
+
+        {%- comment -%} Orbit rings {%- endcomment -%}
+        <div class="drift-locator__orbit drift-locator__orbit--1"></div>
+        <div class="drift-locator__orbit drift-locator__orbit--2"></div>
+
+        {%- comment -%} Sphere — photo texture {%- endcomment -%}
+        <div class="drift-locator__sphere">
+          <div class="drift-locator__sphere-rotate">
+            <img
+              src="https://cdn.shopify.com/s/files/1/0673/1451/6265/files/drift-earth-night.png?v=1783363674"
+              alt=""
+              class="drift-locator__sphere-img"
+              loading="eager"
+              draggable="false"
+              aria-hidden="true"
+            >
+            <img
+              src="https://cdn.shopify.com/s/files/1/0673/1451/6265/files/drift-earth-night.png?v=1783363674"
+              alt=""
+              class="drift-locator__sphere-img"
+              loading="eager"
+              draggable="false"
+              aria-hidden="true"
+            >
+          </div>
+          <div class="drift-locator__sphere-atmos"></div>
+          <div class="drift-locator__sphere-shadow"></div>
+          <div class="drift-locator__sphere-rim"></div>
+        </div>
+
+        {%- comment -%} Animated pin {%- endcomment -%}
+        <div class="drift-locator__pin">
+          <span class="drift-locator__pin-ring"></span>
+          <span class="drift-locator__pin-dot"></span>
+        </div>
+
+        <div class="drift-locator__globe-label" data-locator-globe-label>Buscando tienda&hellip;</div>
+      </div>
+
+      <div class="drift-locator__stat">
+        <div class="drift-locator__stat-label">Tiendas encontradas</div>
+        <div class="drift-locator__stat-row">
+          <span class="drift-locator__stat-number" data-locator-count>{{ store_count }}</span>
+          <span class="drift-locator__stat-scope" data-locator-scope>en todas las ciudades</span>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} RIGHT — detail + map + list {%- endcomment -%}
+    <div class="drift-locator__col drift-locator__col--detail">
+
+      {%- if store_count > 0 -%}
+
+        <div class="drift-locator__detail-card" data-locator-detail>
+          <div class="drift-locator__detail-info">
+            <div class="drift-locator__detail-eyebrow">
+              <span>Tienda más cercana</span>
+              <span class="drift-locator__status" data-locator-status>
+                <span class="drift-locator__status-dot" data-locator-status-dot></span>
+                <span data-locator-status-label>Abierto</span>
+              </span>
+            </div>
+            <div class="drift-locator__detail-name" data-locator-name>&nbsp;</div>
+            <div class="drift-locator__detail-address" data-locator-address>&nbsp;</div>
+            <div class="drift-locator__detail-meta">
+              <span class="drift-locator__detail-meta-item">
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.91 18.59 14.946 9.81c2.228-3.886-.525-8.777-4.942-8.777-4.385 0-7.147 4.822-4.992 8.713z"></path></svg>
+                <span data-locator-distance>&mdash;</span>
+              </span>
+              <span class="drift-locator__detail-meta-item">
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M18.701 11.396a8.472 8.472 0 1 1-16.943 0 8.472 8.472 0 0 1 16.943 0m-8.471 7.472a7.472 7.472 0 1 0 0-14.944 7.472 7.472 0 0 0 0 14.944"></path><path d="M9.73 11.396a.5.5 0 0 1 .5-.5h2.98a.5.5 0 1 1 0 1h-2.98a.5.5 0 0 1-.5-.5m.5-3.98a.5.5 0 0 1 .5.5v2.98a.5.5 0 1 1-1 0v-2.98a.5.5 0 0 1 .5-.5"></path></svg>
+                <span data-locator-hours>&mdash;</span>
+              </span>
+            </div>
+            <a href="#" target="_blank" rel="noopener" class="drift-locator__directions-btn" data-locator-directions>
+              Cómo llegar
+              <svg width="11" height="9" viewBox="0 0 14 10" fill="none" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg>
+            </a>
+          </div>
+          <div class="drift-locator__detail-image" data-locator-image>
+            <span class="drift-locator__image-placeholder">foto de fachada / interior</span>
+          </div>
+        </div>
+
+        {%- if cities.size > 1 -%}
+          <div class="drift-locator__tabs" data-locator-tabs>
+            <button type="button" class="drift-locator__tab is-active" data-locator-tab="" data-locator-tab-count="{{ store_count }}">
+              Todas <span class="drift-locator__tab-count">{{ store_count }}</span>
+            </button>
+            {%- for city in cities -%}
+              {%- assign city_count = 0 -%}
+              {%- for block in store_blocks -%}
+                {%- if block.settings.city == city -%}{%- assign city_count = city_count | plus: 1 -%}{%- endif -%}
+              {%- endfor -%}
+              <button type="button" class="drift-locator__tab" data-locator-tab="{{ city | escape }}" data-locator-tab-count="{{ city_count }}">
+                {{ city }} <span class="drift-locator__tab-count">{{ city_count }}</span>
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        <div class="drift-locator__map-wrap">
+          <div class="drift-locator__map" data-locator-map></div>
+
+          {%- comment -%} Decorative fallback shown until Google Maps is configured/loaded {%- endcomment -%}
+          <div class="drift-locator__map-fallback" data-locator-map-fallback>
+            <div class="drift-locator__map-grid" aria-hidden="true"></div>
+            <span class="drift-locator__map-note">
+Cargando mapa&hellip;
+            </span>
+          </div>
+        </div>
+
+        <div class="drift-locator__list" data-locator-list>
+          {%- for block in store_blocks -%}
+            {%- assign store = block.settings -%}
+            <button
+              type="button"
+              class="drift-locator__row{% if forloop.first %} is-active{% endif %}"
+              data-locator-store
+              data-index="{{ forloop.index0 }}"
+              data-name="{{ store.name | escape }}"
+              data-city="{{ store.city | escape }}"
+              data-address="{{ store.address | escape }}"
+              data-lat="{{ store.lat }}"
+              data-lng="{{ store.lng }}"
+              data-hours="{{ store.hours | escape }}"
+              data-status="{{ store.status }}"
+              data-phone="{{ store.phone | escape }}"
+              data-directions="{{ store.directions_url }}"
+              data-image="{% if store.cover_image != blank %}{{ store.cover_image | image_url: width: 800 }}{% endif %}"
+              {{ block.shopify_attributes }}
+            >
+              <span class="drift-locator__row-text">
+                <span class="drift-locator__row-name">{{ store.name | default: 'Tienda' }}</span>
+                <span class="drift-locator__row-sub">{{ store.city }}{% if store.city != blank %} &middot; {% endif %}{{ store.address | truncate: 40 }}</span>
+              </span>
+              <span class="drift-locator__row-dot{% if store.status == 'closed' %} is-closed{% endif %}" aria-hidden="true"></span>
+            </button>
+          {%- endfor -%}
+        </div>
+
+      {%- else -%}
+        <div class="drift-locator__empty">
+          Agrega tiendas desde el editor de temas (bloques &ldquo;Tienda&rdquo;) para mostrarlas aquí.
+        </div>
+      {%- endif -%}
+
+      {%- if cta_heading != blank or cta_text != blank -%}
+        <div class="drift-locator__cta">
+          <div class="drift-locator__cta-image">
+            {%- if cta_image != blank -%}
+              <img src="{{ cta_image | image_url: width: 200 }}" alt="{{ cta_image.alt | escape }}" width="56" height="56" loading="lazy">
+            {%- endif -%}
+          </div>
+          <div class="drift-locator__cta-text">
+            {%- if cta_heading != blank -%}<div class="drift-locator__cta-heading">{{ cta_heading }}</div>{%- endif -%}
+            {%- if cta_text != blank -%}<div class="drift-locator__cta-body">{{ cta_text }}</div>{%- endif -%}
+          </div>
+          {%- if cta_button_label != blank -%}
+            <a
+              href="{{ cta_button_url | default: 'https://wa.me/573176306014?text=Hola%2C%20quiero%20ser%20distribuidor%20MEXICAPS' }}"
+              target="_blank"
+              rel="noopener"
+              class="drift-locator__cta-btn"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+              {{ cta_button_label }}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- comment -%} Store data passed to JS as JSON — built manually so every field is safely escaped {%- endcomment -%}
+  {%- capture stores_json -%}
+    [
+      {%- for block in store_blocks -%}
+        {%- assign store = block.settings -%}
+        {
+          "index": {{ forloop.index0 }},
+          "name": {{ store.name | default: 'Tienda' | json }},
+          "city": {{ store.city | json }},
+          "address": {{ store.address | json }},
+          "lat": {{ store.lat | default: 0 | json }},
+          "lng": {{ store.lng | default: 0 | json }},
+          "hours": {{ store.hours | json }},
+          "status": {{ store.status | default: 'open' | json }},
+          "phone": {{ store.phone | json }},
+          "directionsUrl": {{ store.directions_url | json }},
+          "image": {% if store.cover_image != blank %}{{ store.cover_image | image_url: width: 800 | json }}{% else %}null{% endif %}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  {%- endcapture -%}
+  <script type="application/json" data-locator-stores>{{ stores_json }}</script>
+
+</section>
+
+<link rel="stylesheet" href="{{ 'drift-store-locator.css' | asset_url }}">
+<style>
+  .drift-locator__sphere-band {
+    background-image: url('https://cdn.shopify.com/s/files/1/0673/1451/6265/files/drift-earth-night.png?v=1783363674') !important;
+  }
+</style>
+<script src="{{ 'drift-store-locator.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "DRIFT Store Locator",
+  "tag": "section",
+  "class": "drift-section-locator",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Encuentra tu tienda MEXICAPS más cercana"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subtítulo",
+      "default": "Explora nuestra red de tiendas autorizadas y encuentra la más cercana a ti."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_locate_me",
+      "label": "Mostrar botón \"Mi ubicación\"",
+      "default": true,
+      "info": "Usa la geolocalización del navegador para calcular la tienda más cercana."
+    },
+    {
+      "type": "header",
+      "content": "Mapa (OpenStreetMap — gratuito)"
+    },
+    {
+      "type": "range",
+      "id": "map_zoom",
+      "label": "Zoom inicial del mapa",
+      "min": 3,
+      "max": 18,
+      "step": 1,
+      "default": 13
+    },
+    {
+      "type": "select",
+      "id": "map_style",
+      "label": "Estilo del mapa",
+      "options": [
+        { "value": "auto", "label": "Seguir tema (claro/oscuro)" },
+        { "value": "light", "label": "Siempre claro" },
+        { "value": "dark", "label": "Siempre oscuro" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "header",
+      "content": "Banner — ¿Tienes una tienda?"
+    },
+    {
+      "type": "text",
+      "id": "cta_heading",
+      "label": "Título",
+      "default": "¿Quieres ser distribuidor MEXICAPS?"
+    },
+    {
+      "type": "textarea",
+      "id": "cta_text",
+      "label": "Texto",
+      "default": "Contáctanos por WhatsApp y te contamos cómo unirte a nuestra red de distribuidores autorizados."
+    },
+    {
+      "type": "image_picker",
+      "id": "cta_image",
+      "label": "Imagen"
+    },
+    {
+      "type": "text",
+      "id": "cta_button_label",
+      "label": "Texto del botón",
+      "default": "Escribir por WhatsApp"
+    },
+    {
+      "type": "url",
+      "id": "cta_button_url",
+      "label": "Enlace del botón"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "store",
+      "name": "Tienda",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "cover_image",
+          "label": "Foto de fachada / interior"
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Nombre de la tienda",
+          "default": "MEXICAPS – Tienda"
+        },
+        {
+          "type": "text",
+          "id": "city",
+          "label": "Ciudad",
+          "info": "Usada para agrupar en pestañas (ej. Bogotá)."
+        },
+        {
+          "type": "textarea",
+          "id": "address",
+          "label": "Dirección completa"
+        },
+        {
+          "type": "text",
+          "id": "lat",
+          "label": "Latitud",
+          "info": "Ej. 4.6533. Usa Google Maps: clic derecho en el punto → copiar coordenadas."
+        },
+        {
+          "type": "text",
+          "id": "lng",
+          "label": "Longitud",
+          "info": "Ej. -74.0836"
+        },
+        {
+          "type": "text",
+          "id": "hours",
+          "label": "Horario",
+          "default": "10:00 AM – 8:00 PM"
+        },
+        {
+          "type": "select",
+          "id": "status",
+          "label": "Estado",
+          "options": [
+            { "value": "open", "label": "Abierto" },
+            { "value": "closed", "label": "Cerrado" }
+          ],
+          "default": "open"
+        },
+        {
+          "type": "text",
+          "id": "phone",
+          "label": "Teléfono (opcional)"
+        },
+        {
+          "type": "url",
+          "id": "directions_url",
+          "label": "Enlace \"Cómo llegar\" (opcional)",
+          "info": "Si se deja vacío, se genera automáticamente con la latitud/longitud."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Store Locator"
+    }
+  ]
+}
+{% endschema %}

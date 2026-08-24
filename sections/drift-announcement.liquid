@@ -1,0 +1,677 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  DRIFT Announcement Bar — V3
+  Static (auto-rotate) + Marquee + Countdown
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign mode = section.settings.mode
+  assign homepage_only = section.settings.homepage_only
+  assign blocks = section.blocks
+  assign block_count = blocks.size
+  assign rotation_speed = section.settings.rotation_speed
+  assign marquee_speed = section.settings.marquee_speed
+
+  if homepage_only and request.page_type != 'index'
+    assign show_bar = false
+  else
+    assign show_bar = true
+  endif
+
+  assign is_countdown = false
+  if mode == 'countdown'
+    assign is_countdown = true
+  endif
+-%}
+
+{%- if show_bar and block_count > 0 -%}
+  <div
+    class="drift-announcement"
+    data-section-id="{{ section.id }}"
+    data-section-type="drift-announcement"
+    data-mode="{{ mode }}"
+    data-rotation-speed="{{ rotation_speed }}"
+    data-block-count="{{ block_count }}"
+    {%- if is_countdown -%}
+      data-countdown-year="{{ section.settings.countdown_year }}"
+      data-countdown-month="{{ section.settings.countdown_month }}"
+      data-countdown-day="{{ section.settings.countdown_day }}"
+      data-countdown-hour="{{ section.settings.countdown_hour }}"
+      data-countdown-minute="{{ section.settings.countdown_minute }}"
+      data-countdown-tz="{{ section.settings.countdown_timezone | default: 'America/New_York' }}"
+      data-countdown-fallback="{{ section.settings.countdown_fallback }}"
+      data-marquee-speed="{{ marquee_speed }}"
+    {%- endif -%}
+  >
+    <span class="drift-announcement__inner drift-glass--subtle">
+
+      {%- comment -%} ── COUNTDOWN MODE ── {%- endcomment -%}
+      {%- if is_countdown -%}
+        <span class="drift-announcement__countdown" data-announcement-countdown>
+          {%- if section.settings.countdown_label != blank -%}
+            <span class="drift-announcement__countdown-label">{{ section.settings.countdown_label | escape }}</span>
+          {%- endif -%}
+          <span class="drift-announcement__countdown-timer">
+            <span data-cd-days>00</span><span class="drift-announcement__countdown-sep">:</span><span data-cd-hours>00</span><span class="drift-announcement__countdown-sep">:</span><span data-cd-mins>00</span><span class="drift-announcement__countdown-sep">:</span><span data-cd-secs>00</span>
+          </span>
+        </span>
+      {%- endif -%}
+
+      {%- comment -%} ── STATIC MODE ── {%- endcomment -%}
+      <span class="drift-announcement__static{% unless mode == 'static' %} is-hidden{% endunless %}" data-announcement-static>
+        {%- for block in blocks -%}
+          {%- if block.settings.text != blank -%}
+            <span
+              class="drift-announcement__message{% if forloop.first %} is-active{% endif %}"
+              data-announcement-message="{{ forloop.index0 }}"
+              {{ block.shopify_attributes }}
+            >
+              {%- if block.settings.link != blank -%}
+                <a href="{{ block.settings.link }}" class="drift-announcement__link">
+                  {{ block.settings.text | escape }}
+                </a>
+              {%- else -%}
+                {{ block.settings.text | escape }}
+              {%- endif -%}
+            </span>
+          {%- endif -%}
+        {%- endfor -%}
+      </span>
+
+      {%- comment -%} ── MARQUEE MODE ── {%- endcomment -%}
+      <span class="drift-announcement__marquee{% unless mode == 'marquee' %} is-hidden{% endunless %}" data-announcement-marquee>
+        {%- if block_count <= 1 -%}
+          {%- assign repeats = 10 -%}
+        {%- elsif block_count <= 3 -%}
+          {%- assign repeats = 6 -%}
+        {%- else -%}
+          {%- assign repeats = 4 -%}
+        {%- endif -%}
+
+        {%- for copy in (1..2) -%}
+          <span class="drift-announcement__marquee-track" {% if copy > 1 %}aria-hidden="true"{% endif %} style="animation-duration: {{ marquee_speed }}s;">
+            {%- for r in (1..repeats) -%}
+              {%- for block in blocks -%}
+                {%- if block.settings.text != blank -%}
+                  <span class="drift-announcement__marquee-item" {% if copy == 1 and r == 1 %}{{ block.shopify_attributes }}{% endif %}>
+                    {%- if block.settings.link != blank -%}
+                      <a href="{{ block.settings.link }}" class="drift-announcement__link">
+                        {{ block.settings.text | escape }}
+                      </a>
+                    {%- else -%}
+                      {{ block.settings.text | escape }}
+                    {%- endif -%}
+                  </span>
+                  <span class="drift-announcement__marquee-sep" aria-hidden="true">✦</span>
+                {%- endif -%}
+              {%- endfor -%}
+            {%- endfor -%}
+          </span>
+        {%- endfor -%}
+      </span>
+
+    </span>
+  </div>
+{%- endif -%}
+
+<style>
+  /* ----------------------------------------
+     Announcement Bar — Layout
+     ---------------------------------------- */
+
+  .drift-announcement {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: calc(var(--drift-z-header) + 1);
+    pointer-events: none;
+  }
+
+  .drift-announcement__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: var(--drift-announcement-height, 36px);
+    overflow: hidden;
+    pointer-events: auto;
+    background: var(--drift-glass-bg);
+    -webkit-backdrop-filter: blur(var(--drift-glass-blur));
+    backdrop-filter: blur(var(--drift-glass-blur));
+    border-bottom: 1px solid var(--drift-glass-border);
+  }
+
+  /* Push header down when announcement bar exists */
+  body:has(.drift-announcement) .drift-header {
+    top: var(--drift-announcement-height, 36px);
+  }
+
+  /* Adjust spacer */
+  body:has(.drift-announcement) .drift-header__spacer {
+    height: calc(48px + var(--drift-space-4) + var(--drift-announcement-height, 36px));
+  }
+
+  /* Adjust collection title bar */
+  body:has(.drift-announcement) .drift-collection__title-bar {
+    top: calc(48px + var(--drift-space-4) + var(--drift-announcement-height, 36px));
+  }
+
+  /* Adjust cart drawer position */
+  body:has(.drift-announcement) .drift-cart__panel {
+    top: calc(48px + var(--drift-space-2) + var(--drift-space-2) + var(--drift-announcement-height, 36px));
+  }
+
+  /* Adjust PDP back button */
+  body:has(.drift-announcement) .drift-pdp__back {
+    top: calc(48px + var(--drift-space-4) + var(--drift-announcement-height, 36px));
+  }
+
+  /* Fix cart drawer max-height so it never gets cut off */
+  body:has(.drift-announcement) .drift-cart__panel {
+    max-height: calc(100dvh - 100px - var(--drift-announcement-height, 36px));
+  }
+
+  /* Fix grid wrap padding to prevent title overlap */
+  body:has(.drift-announcement) .drift-collection__grid-wrap {
+    padding-top: calc(48px + var(--drift-space-4) + 40px + var(--drift-space-2) + var(--drift-announcement-height, 36px));
+  }
+
+  /* Fix contact form — reduce height to account for announcement bar */
+  body:has(.drift-announcement) .drift-contact {
+    height: calc(100dvh - var(--drift-announcement-height, 36px));
+  }
+
+  /* Fix default page layout */
+  body:has(.drift-announcement) .drift-page {
+    padding-top: calc(var(--drift-space-6) + var(--drift-announcement-height, 36px));
+  }
+
+  /* Fix customer pages */
+  body:has(.drift-announcement) .drift-customer {
+    padding-top: calc(var(--drift-space-6) + var(--drift-announcement-height, 36px));
+  }
+
+  /* Fix cart page */
+  body:has(.drift-announcement) .drift-cart-page {
+    padding-top: var(--drift-announcement-height, 36px);
+  }
+
+  /* Fix search page */
+  body:has(.drift-announcement) .drift-search {
+    padding-top: calc(var(--drift-space-6) + var(--drift-announcement-height, 36px));
+  }
+
+  /* ----------------------------------------
+     Typography — Shared
+     ---------------------------------------- */
+
+  .drift-announcement__message,
+  .drift-announcement__marquee-item {
+    font-size: var(--drift-text-xs);
+    font-weight: var(--drift-weight-semibold);
+    letter-spacing: var(--drift-tracking-caps);
+    text-transform: uppercase;
+    color: var(--drift-text);
+    white-space: nowrap;
+  }
+
+  .drift-announcement__link {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity var(--drift-duration-fast) var(--drift-ease);
+  }
+
+  .drift-announcement__link:hover {
+    opacity: 0.6;
+  }
+
+  /* ----------------------------------------
+     Hidden utility
+     ---------------------------------------- */
+
+  .drift-announcement__static.is-hidden,
+  .drift-announcement__marquee.is-hidden,
+  .drift-announcement__countdown.is-hidden {
+    display: none !important;
+  }
+
+  /* ----------------------------------------
+     Countdown Mode
+     ---------------------------------------- */
+
+  .drift-announcement__countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--drift-space-2);
+    width: 100%;
+    height: 100%;
+  }
+
+  .drift-announcement__countdown-label {
+    font-size: var(--drift-text-xs);
+    font-weight: var(--drift-weight-semibold);
+    letter-spacing: var(--drift-tracking-caps);
+    text-transform: uppercase;
+    color: var(--drift-text);
+    white-space: nowrap;
+  }
+
+  .drift-announcement__countdown-timer {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: var(--drift-text-xs);
+    font-weight: var(--drift-weight-bold);
+    letter-spacing: var(--drift-tracking-caps);
+    color: var(--drift-text);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .drift-announcement__countdown-sep {
+    color: var(--drift-text-muted);
+    padding: 0 1px;
+  }
+
+  /* ----------------------------------------
+     Static Mode — Fade rotation
+     ---------------------------------------- */
+
+  .drift-announcement__static {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drift-announcement__message {
+    position: absolute;
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity var(--drift-duration-normal) var(--drift-ease),
+      transform var(--drift-duration-normal) var(--drift-ease);
+    pointer-events: none;
+  }
+
+  .drift-announcement__message.is-active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* ----------------------------------------
+     Marquee Mode — Continuous scroll
+     ---------------------------------------- */
+
+  .drift-announcement__marquee {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
+  }
+
+  .drift-announcement__marquee-track {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    min-width: max-content;
+    animation: drift-marquee-scroll linear infinite;
+    will-change: transform;
+  }
+
+  .drift-announcement__marquee-item {
+    flex-shrink: 0;
+    padding: 0 var(--drift-space-2);
+  }
+
+  .drift-announcement__marquee-sep {
+    flex-shrink: 0;
+    font-size: 8px;
+    color: var(--drift-text-muted);
+    opacity: 0.4;
+    padding: 0 var(--drift-space-1);
+  }
+
+  @keyframes drift-marquee-scroll {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+  }
+
+  /* Pause on hover */
+  .drift-announcement__marquee:hover .drift-announcement__marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* ----------------------------------------
+     Responsive
+     ---------------------------------------- */
+
+  @media (max-width: 1024px) {
+    :root {
+      --drift-announcement-height: 32px;
+    }
+
+    .drift-announcement__message,
+    .drift-announcement__marquee-item,
+    .drift-announcement__countdown-label,
+    .drift-announcement__countdown-timer {
+      font-size: 10px;
+    }
+  }
+
+  @media (min-width: 1025px) {
+    :root {
+      --drift-announcement-height: 36px;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    var section = document.querySelector('[data-section-type="drift-announcement"]');
+    if (!section) return;
+
+    var mode = section.getAttribute('data-mode');
+
+    /* ── Shared: start static rotation ── */
+    function initStatic() {
+      var messages = section.querySelectorAll('[data-announcement-message]');
+      if (messages.length <= 1) return;
+      var current = 0;
+      var speed = parseInt(section.getAttribute('data-rotation-speed'), 10) || 4;
+      setInterval(function() {
+        messages[current].classList.remove('is-active');
+        current = (current + 1) % messages.length;
+        messages[current].classList.add('is-active');
+      }, speed * 1000);
+    }
+
+    /* ── Shared: switch to fallback mode ── */
+    function switchToFallback(fallback) {
+      var countdown = section.querySelector('[data-announcement-countdown]');
+      var staticEl = section.querySelector('[data-announcement-static]');
+      var marqueeEl = section.querySelector('[data-announcement-marquee]');
+
+      if (countdown) countdown.classList.add('is-hidden');
+
+      if (fallback === 'marquee') {
+        if (staticEl) staticEl.classList.add('is-hidden');
+        if (marqueeEl) marqueeEl.classList.remove('is-hidden');
+      } else {
+        if (marqueeEl) marqueeEl.classList.add('is-hidden');
+        if (staticEl) staticEl.classList.remove('is-hidden');
+        initStatic();
+      }
+    }
+
+    /* ── Countdown Mode ── */
+    if (mode === 'countdown') {
+      var y = parseInt(section.dataset.countdownYear, 10);
+      var m = parseInt(section.dataset.countdownMonth, 10);
+      var d = parseInt(section.dataset.countdownDay, 10);
+      var h = parseInt(section.dataset.countdownHour, 10) || 0;
+      var mn = parseInt(section.dataset.countdownMinute, 10) || 0;
+      var tz = section.dataset.countdownTz || 'America/New_York';
+      var fallback = section.dataset.countdownFallback || 'static';
+
+      if (!y || !m || !d) {
+        switchToFallback(fallback);
+        return;
+      }
+
+      var pad2 = function(n) { return n < 10 ? '0' + n : String(n); };
+      var isoStr = y + '-' + pad2(m) + '-' + pad2(d) + 'T' + pad2(h) + ':' + pad2(mn) + ':00';
+
+      var target;
+      try {
+        var fmt = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+          hour12: false
+        });
+        var local = new Date(isoStr);
+        var parts = fmt.formatToParts(local);
+        var get = function(type) {
+          for (var i = 0; i < parts.length; i++) {
+            if (parts[i].type === type) return parseInt(parts[i].value, 10);
+          }
+          return 0;
+        };
+        var tzDate = new Date(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+        var offset = tzDate.getTime() - local.getTime();
+        target = local.getTime() - offset;
+      } catch(e) {
+        target = new Date(y, m - 1, d, h, mn, 0).getTime();
+      }
+
+      /* If already expired, go straight to fallback */
+      if (Date.now() >= target) {
+        switchToFallback(fallback);
+        return;
+      }
+
+      var $d = section.querySelector('[data-cd-days]');
+      var $h = section.querySelector('[data-cd-hours]');
+      var $m = section.querySelector('[data-cd-mins]');
+      var $s = section.querySelector('[data-cd-secs]');
+
+      function pad(n) { return n < 10 ? '0' + n : String(n); }
+
+      function tick() {
+        var diff = target - Date.now();
+
+        if (diff <= 0) {
+          switchToFallback(fallback);
+          return;
+        }
+
+        var days = Math.floor(diff / 86400000);
+        var hrs = Math.floor((diff % 86400000) / 3600000);
+        var mins = Math.floor((diff % 3600000) / 60000);
+        var secs = Math.floor((diff % 60000) / 1000);
+
+        $d.textContent = pad(days);
+        $h.textContent = pad(hrs);
+        $m.textContent = pad(mins);
+        $s.textContent = pad(secs);
+
+        requestAnimationFrame(function() {
+          setTimeout(tick, 1000 - (Date.now() % 1000));
+        });
+      }
+
+      tick();
+      return;
+    }
+
+    /* ── Static Mode ── */
+    if (mode === 'static') {
+      initStatic();
+      return;
+    }
+
+    /* ── Marquee Mode — no JS needed, CSS handles it ── */
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "DRIFT Announcement",
+  "tag": "section",
+  "class": "drift-announcement-section",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "mode",
+      "label": "Display mode",
+      "info": "Static rotates through messages. Marquee scrolls continuously. Countdown shows a timer, then switches to your fallback mode when it expires.",
+      "options": [
+        { "value": "static", "label": "Static (auto-rotate)" },
+        { "value": "marquee", "label": "Marquee (scrolling)" },
+        { "value": "countdown", "label": "Countdown timer" }
+      ],
+      "default": "marquee"
+    },
+    {
+      "type": "checkbox",
+      "id": "homepage_only",
+      "label": "Homepage only",
+      "info": "When enabled, the announcement bar only appears on the homepage.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "rotation_speed",
+      "label": "Rotation speed (static mode)",
+      "info": "Seconds between each message.",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 4,
+      "unit": "s"
+    },
+    {
+      "type": "range",
+      "id": "marquee_speed",
+      "label": "Marquee speed",
+      "info": "Seconds for one full scroll cycle. Lower = faster.",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "default": 30,
+      "unit": "s"
+    },
+    {
+      "type": "header",
+      "content": "Countdown Timer"
+    },
+    {
+      "type": "paragraph",
+      "content": "These settings only apply when Display mode is set to \"Countdown timer\"."
+    },
+    {
+      "type": "text",
+      "id": "countdown_label",
+      "label": "Countdown label",
+      "default": "DROP GOES LIVE IN",
+      "info": "Text shown before the timer. Leave blank to show only the countdown."
+    },
+    {
+      "type": "number",
+      "id": "countdown_year",
+      "label": "Year",
+      "default": 2026
+    },
+    {
+      "type": "number",
+      "id": "countdown_month",
+      "label": "Month (1–12)",
+      "default": 3
+    },
+    {
+      "type": "number",
+      "id": "countdown_day",
+      "label": "Day (1–31)",
+      "default": 1
+    },
+    {
+      "type": "number",
+      "id": "countdown_hour",
+      "label": "Hour (0–23)",
+      "default": 12,
+      "info": "24-hour format. 0 = midnight, 12 = noon, 18 = 6 PM."
+    },
+    {
+      "type": "number",
+      "id": "countdown_minute",
+      "label": "Minute (0–59)",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "countdown_timezone",
+      "label": "Timezone",
+      "default": "America/New_York",
+      "info": "The countdown is based on this timezone. All shoppers see the same timer.",
+      "options": [
+        { "value": "Pacific/Honolulu", "label": "Hawaii (HST)" },
+        { "value": "America/Anchorage", "label": "Alaska (AKST)" },
+        { "value": "America/Los_Angeles", "label": "Pacific (PST)" },
+        { "value": "America/Denver", "label": "Mountain (MST)" },
+        { "value": "America/Chicago", "label": "Central (CST)" },
+        { "value": "America/New_York", "label": "Eastern (EST)" },
+        { "value": "America/Toronto", "label": "Toronto (EST)" },
+        { "value": "America/Sao_Paulo", "label": "São Paulo (BRT)" },
+        { "value": "Europe/London", "label": "London (GMT)" },
+        { "value": "Europe/Paris", "label": "Paris (CET)" },
+        { "value": "Europe/Berlin", "label": "Berlin (CET)" },
+        { "value": "Europe/Amsterdam", "label": "Amsterdam (CET)" },
+        { "value": "Europe/Stockholm", "label": "Stockholm (CET)" },
+        { "value": "Europe/Moscow", "label": "Moscow (MSK)" },
+        { "value": "Asia/Dubai", "label": "Dubai (GST)" },
+        { "value": "Asia/Kolkata", "label": "India (IST)" },
+        { "value": "Asia/Shanghai", "label": "China (CST)" },
+        { "value": "Asia/Tokyo", "label": "Tokyo (JST)" },
+        { "value": "Asia/Seoul", "label": "Seoul (KST)" },
+        { "value": "Australia/Sydney", "label": "Sydney (AEST)" },
+        { "value": "Pacific/Auckland", "label": "Auckland (NZST)" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "countdown_fallback",
+      "label": "After countdown ends",
+      "info": "Which mode to switch to when the timer reaches zero.",
+      "options": [
+        { "value": "static", "label": "Static (auto-rotate)" },
+        { "value": "marquee", "label": "Marquee (scrolling)" }
+      ],
+      "default": "static"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "message",
+      "name": "Message",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Free shipping on orders over $100"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (optional)"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "DRIFT Announcement",
+      "blocks": [
+        { "type": "message", "settings": { "text": "Free shipping on orders over $100" } },
+        { "type": "message", "settings": { "text": "New drop — Shop now" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

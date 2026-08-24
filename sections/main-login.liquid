@@ -1,0 +1,156 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Customer Login — Replaces Dawn's main-login.liquid
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-customer" data-section-type="drift-customer-login">
+  <span class="drift-customer__container drift-container">
+    <span class="drift-customer__stack">
+
+      {%- comment -%} === RECOVER PASSWORD (hidden by default, shown via #recover hash) === {%- endcomment -%}
+      <span class="drift-customer__title-card drift-glass" id="recover">
+        <span class="drift-customer__title">{{ 'customer.recover_password.title' | t }}</span>
+      </span>
+      <span class="drift-customer__card drift-glass" data-recover-form>
+        <span class="drift-customer__subtitle">{{ 'customer.recover_password.subtext' | t }}</span>
+
+        {%- form 'recover_customer_password' -%}
+          {% assign recover_success = form.posted_successfully? %}
+
+          <span class="drift-customer__field">
+            <label class="drift-customer__label" for="RecoverEmail">{{ 'customer.login_page.email' | t }}</label>
+            <input
+              class="drift-customer__input"
+              type="email"
+              name="email"
+              id="RecoverEmail"
+              autocorrect="off"
+              autocapitalize="off"
+              autocomplete="email"
+              placeholder="you@example.com"
+              {% if form.errors %}aria-invalid="true" aria-describedby="RecoverEmail-error" autofocus{% endif %}
+            >
+          </span>
+
+          {%- if form.errors -%}
+            <span class="drift-customer__error" id="RecoverEmail-error">
+              {{ form.errors.messages.form }}
+            </span>
+          {%- endif -%}
+
+          <button class="drift-btn drift-btn--primary drift-customer__submit" type="submit">
+            {{ 'customer.login_page.submit' | t }}
+          </button>
+
+          <span class="drift-customer__footer">
+            <a href="#login" class="drift-customer__link">{{ 'customer.login_page.cancel' | t }}</a>
+          </span>
+        {%- endform -%}
+      </span>
+
+      {%- comment -%} === LOGIN === {%- endcomment -%}
+      <span class="drift-customer__title-card drift-glass" id="login">
+        <span class="drift-customer__title">{{ 'customer.login_page.title' | t }}</span>
+      </span>
+      <span class="drift-customer__card drift-glass" data-login-form>
+
+        {%- if recover_success == true -%}
+          <span class="drift-customer__success">{{ 'customer.recover_password.success' | t }}</span>
+        {%- endif -%}
+
+        {%- form 'customer_login', novalidate: 'novalidate' -%}
+          {%- if form.errors -%}
+            <span class="drift-customer__error">
+              {{ form.errors | default_errors }}
+            </span>
+          {%- endif -%}
+
+          <span class="drift-customer__field">
+            <label class="drift-customer__label" for="CustomerEmail">{{ 'customer.login_page.email' | t }}</label>
+            <input
+              class="drift-customer__input"
+              type="email"
+              name="customer[email]"
+              id="CustomerEmail"
+              autocomplete="email"
+              autocorrect="off"
+              autocapitalize="off"
+              placeholder="you@example.com"
+              {% if form.errors contains 'form' %}aria-invalid="true"{% endif %}
+            >
+          </span>
+
+          {%- if form.password_needed -%}
+            <span class="drift-customer__field">
+              <label class="drift-customer__label" for="CustomerPassword">{{ 'customer.login_page.password' | t }}</label>
+              <input
+                class="drift-customer__input"
+                type="password"
+                name="customer[password]"
+                id="CustomerPassword"
+                autocomplete="current-password"
+                {% if form.errors contains 'form' %}aria-invalid="true"{% endif %}
+              >
+            </span>
+
+            <a href="#recover" class="drift-customer__link">{{ 'customer.login_page.forgot_password' | t }}</a>
+          {%- endif -%}
+
+          <button class="drift-btn drift-btn--primary drift-customer__submit" type="submit">
+            {{ 'customer.login_page.sign_in' | t }}
+          </button>
+
+          <span class="drift-customer__footer">
+            <a href="{{ routes.account_register_url }}" class="drift-customer__link">
+              {{ 'customer.login_page.create_account' | t }}
+            </a>
+          </span>
+        {%- endform -%}
+      </span>
+
+      {%- if shop.checkout.guest_login -%}
+        <span class="drift-customer__card drift-glass">
+          <span class="drift-customer__sep">or</span>
+          {%- form 'guest_login' -%}
+            <button class="drift-btn drift-btn--ghost drift-customer__submit" type="submit">
+              {{ 'customer.login_page.guest_continue' | t }}
+            </button>
+          {%- endform -%}
+        </span>
+      {%- endif -%}
+
+    </span>
+  </span>
+</section>
+
+<script>
+(function () {
+  'use strict';
+  var recoverTitle = document.getElementById('recover');
+  var recoverForm = document.querySelector('[data-recover-form]');
+  var loginTitle = document.getElementById('login');
+  var loginForm = document.querySelector('[data-login-form]');
+  if (!recoverTitle || !recoverForm || !loginTitle || !loginForm) return;
+
+  function toggle() {
+    var showRecover = window.location.hash === '#recover';
+    recoverTitle.style.display = showRecover ? '' : 'none';
+    recoverForm.style.display = showRecover ? '' : 'none';
+    loginTitle.style.display = showRecover ? 'none' : '';
+    loginForm.style.display = showRecover ? 'none' : '';
+  }
+
+  toggle();
+  window.addEventListener('hashchange', toggle);
+})();
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.main-login.name",
+  "settings": []
+}
+{% endschema %}

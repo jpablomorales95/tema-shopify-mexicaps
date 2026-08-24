@@ -1,0 +1,32 @@
+{%- comment -%}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Quick Add Prices — Markets-aware Liquid render
+
+  Rendered as a sibling of every [data-quick-add-trigger] so
+  drift-quick-add.js can read pre-rendered prices from the DOM
+  on open. Unlike the Section Rendering API, this captures the
+  customer's full Markets context (rounding, manual market
+  prices, presentment rates).
+
+  Usage:
+    {% render 'drift-quick-add-prices', product: product %}
+  ============================================
+{%- endcomment -%}
+
+<script type="application/json" data-qa-prices-for="{{ product.id }}">
+{
+  "price_min": {{ product.price_min | money_without_trailing_zeros | json }},
+  "price_max": {{ product.price_max | money_without_trailing_zeros | json }},
+  "compare_at_price_max": {%- if product.compare_at_price_max -%}{{ product.compare_at_price_max | money_without_trailing_zeros | json }}{%- else -%}null{%- endif -%},
+  "price_varies": {{ product.price_varies | json }},
+  "variants": {
+    {%- for variant in product.variants -%}
+      "{{ variant.id }}": {
+        "price": {{ variant.price | money_without_trailing_zeros | json }},
+        "compare_at_price": {%- if variant.compare_at_price -%}{{ variant.compare_at_price | money_without_trailing_zeros | json }}{%- else -%}null{%- endif -%}
+      }{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  }
+}
+</script>

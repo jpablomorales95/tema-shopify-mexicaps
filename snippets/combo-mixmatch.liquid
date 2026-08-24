@@ -1,0 +1,127 @@
+{% comment %}
+  ============================================
+  Combo Widget — Mix and Match
+  Renderiza el armador de combo a precio fijo.
+  Se configura como bloque de sección en el editor de temas
+  (DRIFT Product Stack → Agregar bloque → Combo — Mix & Match).
+  Uso: {% render 'combo-mixmatch', product: product, set_price: block.settings.set_price, set_qty: block.settings.set_qty, set_label: block.settings.set_label %}
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign set_qty = set_qty | default: 3
+  assign set_label = set_label | default: 'Arma tu combo'
+  assign anchor_variant = product.selected_or_first_available_variant
+  assign extra_slots = set_qty | minus: 1
+-%}
+
+{%- if set_price != blank and set_price > 0 -%}
+<div
+  class="combo-widget combo-widget--mixmatch drift-glass"
+  data-combo-widget="mixmatch"
+  data-combo-set-price="{{ set_price | times: 100 | round }}"
+  data-combo-set-qty="{{ set_qty }}"
+  data-combo-anchor-id="{{ anchor_variant.id }}"
+  data-combo-anchor-product-id="{{ product.id }}"
+  data-combo-anchor-title="{{ product.title | escape }}"
+  data-combo-anchor-image="{{ product.featured_image | image_url: width: 200 }}"
+  data-combo-anchor-price="{{ anchor_variant.price }}"
+>
+  <div class="combo-widget__header">
+    <span class="combo-widget__badge">Mix &amp; Match</span>
+    <h3 class="combo-widget__title">{{ set_label }}</h3>
+    <p class="combo-widget__subtitle">
+      Elige {{ extra_slots }} producto{% if extra_slots != 1 %}s{% endif %} más de cualquier parte de la tienda y llévate el combo completo por un precio fijo.
+    </p>
+  </div>
+
+  <div class="combo-widget__progress">
+    <div class="combo-widget__progress-track">
+      <div class="combo-widget__progress-fill" data-combo-progress-fill style="width: {{ 100 | divided_by: set_qty }}%"></div>
+    </div>
+    <span class="combo-widget__progress-text">
+      <span data-combo-progress-count>1</span> de {{ set_qty }} seleccionados
+    </span>
+  </div>
+
+  <div class="combo-widget__slots" data-combo-slots>
+    {%- comment -%} Slot 0: producto ancla, siempre bloqueado {%- endcomment -%}
+    <div class="combo-slot combo-slot--locked" data-combo-slot="0" data-combo-filled="true">
+      <div class="combo-slot__thumb">
+        {%- if product.featured_image -%}
+          <img src="{{ product.featured_image | image_url: width: 160 }}" alt="{{ product.title | escape }}" width="80" height="80" loading="lazy">
+        {%- endif -%}
+      </div>
+      <div class="combo-slot__info">
+        <span class="combo-slot__name">{{ product.title | escape }}</span>
+        <span class="combo-slot__tag">Este producto</span>
+      </div>
+      <span class="combo-slot__check">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </span>
+    </div>
+
+    {%- comment -%} Slots restantes: vacíos, se llenan con JS {%- endcomment -%}
+    {%- for i in (1..extra_slots) -%}
+      <button type="button" class="combo-slot combo-slot--empty" data-combo-slot="{{ i }}" data-combo-filled="false">
+        <span class="combo-slot__plus">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <span class="combo-slot__cta">Agregar producto {{ forloop.index | plus: 1 }}</span>
+      </button>
+    {%- endfor -%}
+  </div>
+
+  <div class="combo-widget__pricing" data-combo-pricing hidden>
+    <div class="combo-widget__price-row">
+      <span class="combo-widget__price-label">Precio normal</span>
+      <span class="combo-widget__price-normal" data-combo-price-normal></span>
+    </div>
+    <div class="combo-widget__price-row combo-widget__price-row--final">
+      <span class="combo-widget__price-label">Precio del combo</span>
+      <span class="combo-widget__price-final" data-combo-price-final></span>
+    </div>
+    <div class="combo-widget__price-save" data-combo-price-save></div>
+  </div>
+
+  <button type="button" class="drift-btn drift-btn--primary combo-widget__submit" data-combo-submit disabled>
+    <span data-combo-submit-text>Completa tu combo</span>
+  </button>
+</div>
+
+{%- comment -%} ═══ PICKER MODAL (compartido, se posiciona por JS) ═══ {%- endcomment -%}
+<div class="combo-picker" data-combo-picker hidden>
+  <span class="combo-picker__backdrop" data-combo-picker-close></span>
+  <div class="combo-picker__card drift-glass" data-combo-picker-card>
+    <div class="combo-picker__header">
+      <span class="combo-picker__title">Elige un producto</span>
+      <button class="drift-icon-btn" data-combo-picker-close type="button" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="combo-picker__search">
+      <input type="text" placeholder="Buscar producto..." data-combo-picker-input autocomplete="off">
+    </div>
+    <div class="combo-picker__results" data-combo-picker-results>
+      <p class="combo-picker__hint">Escribe para buscar, o elige de lo más popular abajo.</p>
+    </div>
+  </div>
+</div>
+
+{%- comment -%} ═══ VARIANT PICKER MODAL ═══ {%- endcomment -%}
+<div class="combo-variant" data-combo-variant hidden>
+  <span class="combo-variant__backdrop" data-combo-variant-close></span>
+  <div class="combo-variant__card drift-glass" data-combo-variant-card>
+    <div class="combo-picker__header">
+      <span class="combo-picker__title" data-combo-variant-title>Elige talla / color</span>
+      <button class="drift-icon-btn" data-combo-variant-close type="button" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="combo-variant__options" data-combo-variant-options></div>
+    <button type="button" class="drift-btn drift-btn--primary combo-variant__confirm" data-combo-variant-confirm disabled>
+      Confirmar
+    </button>
+  </div>
+</div>
+{%- endif -%}

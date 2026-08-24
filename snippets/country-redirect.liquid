@@ -1,0 +1,329 @@
+{% comment %}
+  country-redirect.liquid — MEXICAPS Geo Banner (v2 — multi-idioma)
+  Estilo: Drift theme (gris #e8e8e8, verde neón #39FF14, negro, blur)
+
+  Lógica:
+  - mexicaps.us + visitante de Colombia  → modal en español → "Ir a mexicaps.co"
+  - mexicaps.co + visitante de CUALQUIER país que NO sea Colombia
+      → modal traducido al idioma del país del visitante
+      → "Saludos desde {país}!" + botón "Comprar en mi destino →" a mexicaps.us
+  - Colombia entrando a mexicaps.co → sin modal (experiencia normal)
+
+  Se cierra con X, click afuera, o botón "Quedarme aquí".
+  Se recuerda en sessionStorage (no vuelve a aparecer en la misma sesión).
+{% endcomment %}
+
+<style>
+  #mxcs-geo-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 0 24px 0;
+    animation: mxcs-fade-in 0.35s ease forwards;
+  }
+
+  #mxcs-geo-overlay.mxcs-show {
+    display: flex;
+  }
+
+  @keyframes mxcs-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  #mxcs-geo-card {
+    background: #e8e8e8;
+    border-radius: 24px;
+    padding: 36px 28px 28px;
+    width: calc(100% - 32px);
+    max-width: 420px;
+    position: relative;
+    text-align: center;
+    animation: mxcs-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+
+  @keyframes mxcs-slide-up {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  #mxcs-geo-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #555;
+    line-height: 1;
+    padding: 4px 6px;
+    transition: color 0.2s;
+    z-index: 2;
+  }
+  #mxcs-geo-close:hover { color: #000; }
+
+  .mxcs-geo-glow {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 12px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mxcs-geo-glow::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(57,255,20,0.25) 0%, transparent 70%);
+    filter: blur(12px);
+  }
+
+  .mxcs-geo-logo {
+    font-size: 52px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .mxcs-geo-flag {
+    font-size: 28px;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    z-index: 2;
+  }
+
+  .mxcs-geo-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #111;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    margin: 0 0 10px;
+  }
+
+  .mxcs-geo-sub {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+    margin: 0 0 24px;
+  }
+
+  .mxcs-geo-cta {
+    display: block;
+    width: 100%;
+    background: #111;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 16px 20px;
+    border-radius: 12px;
+    transition: background 0.2s, transform 0.15s;
+    margin-bottom: 10px;
+  }
+  .mxcs-geo-cta:hover {
+    background: #39FF14;
+    color: #000;
+    transform: translateY(-1px);
+  }
+
+  .mxcs-geo-dismiss {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 12px;
+    color: #888;
+    text-decoration: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    padding: 6px;
+    transition: color 0.2s;
+  }
+  .mxcs-geo-dismiss:hover { color: #333; }
+</style>
+
+<div id="mxcs-geo-overlay" role="dialog" aria-modal="true" aria-label="Tienda recomendada">
+  <div id="mxcs-geo-card">
+    <button id="mxcs-geo-close" aria-label="Cerrar">✕</button>
+
+    <div class="mxcs-geo-glow">
+      <div class="mxcs-geo-logo">⬡</div>
+      <div class="mxcs-geo-flag" id="mxcs-flag"></div>
+    </div>
+
+    <h2 class="mxcs-geo-title" id="mxcs-geo-title"></h2>
+    <p class="mxcs-geo-sub" id="mxcs-geo-sub"></p>
+
+    <a href="#" id="mxcs-geo-cta" class="mxcs-geo-cta"></a>
+    <button class="mxcs-geo-dismiss" id="mxcs-geo-dismiss"></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'mxcs_geo_v2';
+
+  try {
+    if (sessionStorage.getItem(KEY)) return;
+  } catch (e) {}
+
+  var host = window.location.hostname.toLowerCase();
+  var isCO = host.indexOf('mexicaps.co') !== -1;
+  var isUS = host.indexOf('mexicaps.us') !== -1;
+
+  if (!isCO && !isUS) return;
+
+  // ---------- Traducciones por idioma ----------
+  // {country} se reemplaza por el nombre del país del visitante
+  var I18N = {
+    es: { dismiss: 'Quedarme aquí', greeting: '¡Saludos desde {country}!', sub: 'Compra en tu tienda internacional — <strong>envíos, precios y pagos</strong> pensados para ti.', cta: 'Comprar en mi destino →' },
+    en: { dismiss: 'Stay here', greeting: 'Greetings from {country}!', sub: 'Shop at your destination store — <strong>shipping, pricing and payments</strong> made for you.', cta: 'Shop your destination →' },
+    pt: { dismiss: 'Ficar aqui', greeting: 'Saudações vindas de {country}!', sub: 'Compre na sua loja de destino — <strong>frete, preços e pagamentos</strong> feitos para você.', cta: 'Comprar no meu destino →' },
+    fr: { dismiss: 'Rester ici', greeting: 'Salutations depuis {country} !', sub: 'Achetez sur votre boutique de destination — <strong>livraison, prix et paiements</strong> adaptés à vous.', cta: 'Acheter sur ma boutique →' },
+    de: { dismiss: 'Hier bleiben', greeting: 'Grüße aus {country}!', sub: 'Kaufen Sie in Ihrem Zielshop — <strong>Versand, Preise und Zahlung</strong> auf Sie zugeschnitten.', cta: 'Zu meinem Shop →' },
+    it: { dismiss: 'Resta qui', greeting: 'Saluti da {country}!', sub: 'Acquista nel tuo negozio di destinazione — <strong>spedizione, prezzi e pagamenti</strong> pensati per te.', cta: 'Vai al mio negozio →' },
+    nl: { dismiss: 'Hier blijven', greeting: 'Groeten uit {country}!', sub: 'Winkel in je bestemmingswinkel — <strong>verzending, prijzen en betalingen</strong> speciaal voor jou.', cta: 'Ga naar mijn winkel →' }
+  };
+
+  // ---------- Mapa país (ISO code) → idioma ----------
+  var COUNTRY_LANG = {
+    // Español
+    MX:'es', AR:'es', CL:'es', PE:'es', EC:'es', VE:'es', PA:'es', UY:'es',
+    PY:'es', BO:'es', CR:'es', GT:'es', HN:'es', SV:'es', NI:'es', DO:'es',
+    ES:'es', CU:'es',
+    // Inglés
+    US:'en', GB:'en', CA:'en', AU:'en', NZ:'en', IE:'en', ZA:'en', IN:'en',
+    // Portugués
+    BR:'pt', PT:'pt',
+    // Francés
+    FR:'fr', BE:'fr', CH:'fr',
+    // Alemán
+    DE:'de', AT:'de',
+    // Italiano
+    IT:'it',
+    // Neerlandés
+    NL:'nl'
+  };
+
+  function ccToFlag(cc) {
+    if (!cc || cc.length !== 2) return '🌎';
+    return cc.toUpperCase().replace(/./g, function (c) {
+      return String.fromCodePoint(127397 + c.charCodeAt(0));
+    });
+  }
+
+  function t(lang, key, vars) {
+    var dict = I18N[lang] || I18N.en;
+    var str = dict[key] || (I18N.en[key] || '');
+    if (vars) {
+      for (var k in vars) {
+        str = str.replace('{' + k + '}', vars[k]);
+      }
+    }
+    return str;
+  }
+
+  function dismiss() {
+    try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+    var overlay = document.getElementById('mxcs-geo-overlay');
+    if (!overlay) return;
+    overlay.style.transition = 'opacity 0.3s ease';
+    overlay.style.opacity = '0';
+    setTimeout(function () { overlay.style.display = 'none'; }, 300);
+  }
+
+  function show(flag, title, sub, ctaText, ctaUrl, dismissText) {
+    var overlay   = document.getElementById('mxcs-geo-overlay');
+    var flagEl    = document.getElementById('mxcs-flag');
+    var titleEl   = document.getElementById('mxcs-geo-title');
+    var subEl     = document.getElementById('mxcs-geo-sub');
+    var ctaEl     = document.getElementById('mxcs-geo-cta');
+    var closeEl   = document.getElementById('mxcs-geo-close');
+    var dismissEl = document.getElementById('mxcs-geo-dismiss');
+
+    if (!overlay) return;
+
+    flagEl.textContent    = flag;
+    titleEl.textContent   = title;
+    subEl.innerHTML       = sub;
+    ctaEl.textContent     = ctaText;
+    ctaEl.href            = ctaUrl;
+    dismissEl.textContent = dismissText;
+
+    overlay.classList.add('mxcs-show');
+
+    ctaEl.addEventListener('click', dismiss);
+    closeEl.addEventListener('click', dismiss);
+    dismissEl.addEventListener('click', dismiss);
+
+    // Cerrar al hacer click fuera del card
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) dismiss();
+    });
+  }
+
+  function detect() {
+    fetch('https://ipapi.co/json/', { cache: 'force-cache' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var cc = (d.country_code || '').toUpperCase();
+        var countryName = d.country_name || cc;
+
+        if (!cc) return;
+
+        if (isUS && cc === 'CO') {
+          // Visitante colombiano en mexicaps.us → siempre en español
+          show(
+            '🇨🇴',
+            '¡Hola desde Colombia!',
+            'Tenemos tu tienda oficial con <strong>envíos nacionales</strong>, precios en COP y pago fácil.',
+            'Ir a mexicaps.co →',
+            'https://www.mexicaps.co',
+            'Quedarme aquí'
+          );
+        } else if (isCO && cc !== 'CO') {
+          // Visitante de CUALQUIER otro país en mexicaps.co → traducido a su idioma
+          var lang = COUNTRY_LANG[cc] || 'en';
+          var flag = ccToFlag(cc);
+
+          show(
+            flag,
+            t(lang, 'greeting', { country: countryName }),
+            t(lang, 'sub'),
+            t(lang, 'cta'),
+            'https://www.mexicaps.us',
+            t(lang, 'dismiss')
+          );
+        }
+      })
+      .catch(function () { /* silencioso si falla la API */ });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', detect);
+  } else {
+    detect();
+  }
+})();
+</script>

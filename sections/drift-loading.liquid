@@ -1,0 +1,398 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Loading Screen — Branded splash
+  V3: Multiple content, frequency & animation options
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- if section.settings.enable_loading -%}
+  {%- liquid
+    assign content_style = section.settings.content_style
+    assign frequency = section.settings.frequency
+    assign exit_animation = section.settings.exit_animation
+    assign min_duration = section.settings.min_duration
+    assign cookie_days = section.settings.cookie_days
+
+    assign has_logo_light = false
+    assign has_logo_dark = false
+    if section.settings.logo_light != blank
+      assign has_logo_light = true
+    endif
+    if section.settings.logo_dark != blank
+      assign has_logo_dark = true
+    endif
+  -%}
+
+  <style>
+    /* ── Loading screen ── */
+    #drift-loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      opacity: 1;
+      visibility: visible;
+    }
+    [data-drift-mode="light"] #drift-loading { background: #FAFAFA; }
+    [data-drift-mode="dark"] #drift-loading { background: #0A0A0A; }
+
+    /* ── Content ── */
+    #drift-loading .drift-loading__content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--drift-space-2);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Logo ── */
+    #drift-loading .drift-loading__logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #drift-loading .drift-loading__logo {
+      display: block;
+      width: auto;
+      object-fit: contain;
+    }
+    [data-drift-mode="light"] #drift-loading .drift-loading__logo--dark,
+    [data-drift-mode="dark"] #drift-loading .drift-loading__logo--light { display: none; }
+    #drift-loading .drift-loading__logo--light:only-child,
+    #drift-loading .drift-loading__logo--dark:only-child { display: block; }
+
+    /* ── Shop name fallback ── */
+    #drift-loading .drift-loading__shop-name {
+      font-size: var(--drift-text-2xl);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--drift-text);
+      text-transform: uppercase;
+    }
+
+    /* ── Tagline ── */
+    #drift-loading .drift-loading__tagline {
+      font-size: var(--drift-text-sm);
+      color: var(--drift-text);
+      opacity: 0.45;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* ── Loading bar ── */
+    #drift-loading .drift-loading__bar-track {
+      display: block;
+      width: 120px;
+      height: 2px;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: var(--drift-space-3);
+      position: relative;
+    }
+    [data-drift-mode="light"] #drift-loading .drift-loading__bar-track { background: rgba(0, 0, 0, 0.08); }
+    [data-drift-mode="dark"] #drift-loading .drift-loading__bar-track { background: rgba(255, 255, 255, 0.08); }
+    #drift-loading .drift-loading__bar-track::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      border-radius: 9999px;
+      transform: scaleX(0);
+      transform-origin: left center;
+    }
+    [data-drift-mode="light"] #drift-loading .drift-loading__bar-track::before { background: #000; }
+    [data-drift-mode="dark"] #drift-loading .drift-loading__bar-track::before { background: #fff; }
+
+    /* ── Exit: Fade ── */
+    #drift-loading.fade-out .drift-loading__content {
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1), transform 0.5s cubic-bezier(0.4, 0, 1, 1);
+    }
+    #drift-loading.fade-out {
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 1, 1) 0.3s;
+    }
+
+    /* ── Exit: Slide up ── */
+    #drift-loading.slide-up-out .drift-loading__content {
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 1, 1), transform 0.4s cubic-bezier(0.4, 0, 1, 1);
+    }
+    #drift-loading.slide-up-out {
+      opacity: 0;
+      transform: translateY(-100%);
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1) 0.25s, transform 0.8s cubic-bezier(0.76, 0, 0.24, 1) 0.2s;
+    }
+
+    /* ── Exit: Scale + fade ── */
+    #drift-loading.scale-fade-out .drift-loading__content {
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 1, 1), transform 0.5s cubic-bezier(0.4, 0, 1, 1);
+    }
+    #drift-loading.scale-fade-out {
+      opacity: 0;
+      transform: scale(1.15);
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 1, 1) 0.25s, transform 0.8s cubic-bezier(0.76, 0, 0.24, 1) 0.2s;
+    }
+  </style>
+
+  {%- comment -%} Blocking check — runs before paint to prevent flash {%- endcomment -%}
+  <script>
+    (function () {
+      var f = '{{ frequency }}';
+      var c = 'drift_loading_shown';
+      var hide = false;
+      if (f === 'session') {
+        try { if (sessionStorage.getItem(c)) hide = true; } catch (e) {}
+      } else if (f === 'cookie') {
+        if (document.cookie.indexOf(c + '=') !== -1) hide = true;
+      }
+      if (hide) document.write('<style>#drift-loading{display:none!important}</style>');
+    })();
+  </script>
+
+  <span id="drift-loading"
+    data-drift-loading
+    data-loading-frequency="{{ frequency }}"
+    data-loading-duration="{{ min_duration }}"
+    data-loading-cookie-days="{{ cookie_days }}"
+    data-loading-exit="{{ exit_animation }}"
+  >
+    <span class="drift-loading__content">
+
+      {%- if has_logo_light or has_logo_dark -%}
+        <span class="drift-loading__logo-wrap">
+          {%- if has_logo_light -%}
+            <img
+              class="drift-loading__logo drift-loading__logo--light"
+              src="{{ section.settings.logo_light | image_url: height: 200 }}"
+              srcset="{{ section.settings.logo_light | image_url: height: 100 }} 1x, {{ section.settings.logo_light | image_url: height: 200 }} 2x"
+              alt="{{ shop.name | escape }}"
+              width="{{ section.settings.logo_light.width }}"
+              height="{{ section.settings.logo_light.height }}"
+              draggable="false"
+              style="max-height: {{ section.settings.logo_height }}px;"
+            >
+          {%- endif -%}
+          {%- if has_logo_dark -%}
+            <img
+              class="drift-loading__logo drift-loading__logo--dark"
+              src="{{ section.settings.logo_dark | image_url: height: 200 }}"
+              srcset="{{ section.settings.logo_dark | image_url: height: 100 }} 1x, {{ section.settings.logo_dark | image_url: height: 200 }} 2x"
+              alt="{{ shop.name | escape }}"
+              width="{{ section.settings.logo_dark.width }}"
+              height="{{ section.settings.logo_dark.height }}"
+              draggable="false"
+              style="max-height: {{ section.settings.logo_height }}px;"
+            >
+          {%- endif -%}
+        </span>
+      {%- else -%}
+        <span class="drift-loading__shop-name">{{ shop.name }}</span>
+      {%- endif -%}
+
+      {%- if content_style == 'logo_tagline' and section.settings.tagline != blank -%}
+        <span class="drift-loading__tagline">{{ section.settings.tagline }}</span>
+      {%- endif -%}
+
+      {%- if content_style == 'logo_bar' -%}
+        <span class="drift-loading__bar-track" id="drift-loading-bar"></span>
+      {%- endif -%}
+
+    </span>
+  </span>
+
+  <script>
+    function driftLoadingInit() {
+      var el = document.getElementById('drift-loading');
+      if (!el) return;
+
+      var frequency = el.getAttribute('data-loading-frequency');
+      var duration = (parseInt(el.getAttribute('data-loading-duration'), 10) || 2) * 1000;
+      var cookieDays = parseInt(el.getAttribute('data-loading-cookie-days'), 10) || 7;
+      var exitStyle = el.getAttribute('data-loading-exit') || 'fade';
+      var cookieName = 'drift_loading_shown';
+
+      /* Frequency check — blocking script handles the flash,
+         this catches any edge cases */
+      if (el.style.display === 'none' || getComputedStyle(el).display === 'none') return;
+
+      /* Animate loading bar */
+      var bar = document.getElementById('drift-loading-bar');
+      if (bar) {
+        var barDuration = Math.max(duration - 400, 500);
+        var style = document.createElement('style');
+        style.textContent = '#drift-loading .drift-loading__bar-track.is-filling::before { transform: scaleX(1); transition: transform ' + barDuration + 'ms cubic-bezier(0.25, 0.1, 0.25, 1); }';
+        document.head.appendChild(style);
+        setTimeout(function () { bar.classList.add('is-filling'); }, 100);
+      }
+
+      /* Dismiss */
+      setTimeout(function () {
+        /* Set frequency flags */
+        if (frequency === 'session') {
+          try { sessionStorage.setItem(cookieName, '1'); } catch (e) {}
+        } else if (frequency === 'cookie') {
+          var d = new Date();
+          d.setTime(d.getTime() + cookieDays * 24 * 60 * 60 * 1000);
+          document.cookie = cookieName + '=1;expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
+        }
+
+        /* Add exit class */
+        var exitClass = exitStyle === 'slide_up' ? 'slide-up-out' : exitStyle === 'scale_fade' ? 'scale-fade-out' : 'fade-out';
+        el.classList.add(exitClass);
+
+        /* Hide after animation */
+        setTimeout(function () {
+          el.style.display = 'none';
+        }, 1500);
+      }, duration);
+    }
+
+    /* Handle both cases — DOMContentLoaded not yet fired, or already fired */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', driftLoadingInit);
+    } else {
+      driftLoadingInit();
+    }
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "DRIFT Loading Screen",
+  "class": "drift-section-loading",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Loading Screen"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_loading",
+      "label": "Enable loading screen",
+      "default": false,
+      "info": "Turn off and back on to preview the loading screen while editing."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "select",
+      "id": "content_style",
+      "label": "Content style",
+      "options": [
+        { "value": "logo_only", "label": "Logo only" },
+        { "value": "logo_tagline", "label": "Logo + tagline" },
+        { "value": "logo_bar", "label": "Logo + loading bar" }
+      ],
+      "default": "logo_only"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_light",
+      "label": "Logo — light mode",
+      "info": "Shown when the site is in light mode. If only one logo is uploaded, it shows for both modes."
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_dark",
+      "label": "Logo — dark mode",
+      "info": "Shown when the site is in dark mode."
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo max height",
+      "min": 30,
+      "max": 150,
+      "step": 5,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline",
+      "default": "Dropping soon",
+      "info": "Only visible when content style is \"Logo + tagline\"."
+    },
+    {
+      "type": "header",
+      "content": "Behavior"
+    },
+    {
+      "type": "select",
+      "id": "frequency",
+      "label": "Show frequency",
+      "options": [
+        { "value": "session", "label": "Once per session" },
+        { "value": "always", "label": "Every page load" },
+        { "value": "cookie", "label": "Once per visit (cookie)" }
+      ],
+      "default": "session",
+      "info": "Session = until browser closes. Cookie = won't show again for the number of days set below."
+    },
+    {
+      "type": "range",
+      "id": "cookie_days",
+      "label": "Don't show again for (days)",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "default": 7,
+      "unit": "d",
+      "info": "Only applies when frequency is set to \"Once per visit (cookie)\"."
+    },
+    {
+      "type": "range",
+      "id": "min_duration",
+      "label": "Minimum display time",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 2,
+      "unit": "s",
+      "info": "Screen stays visible for at least this long, even if the page loads faster."
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "select",
+      "id": "exit_animation",
+      "label": "Exit animation",
+      "options": [
+        { "value": "fade", "label": "Fade out" },
+        { "value": "slide_up", "label": "Slide up" },
+        { "value": "scale_fade", "label": "Scale + fade" }
+      ],
+      "default": "fade"
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Loading Screen"
+    }
+  ]
+}
+{% endschema %}

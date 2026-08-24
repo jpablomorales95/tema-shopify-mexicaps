@@ -1,0 +1,25 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "drift_contact": {
+      "type": "drift-contact",
+      "settings": {
+        "heading": "CONTACT",
+        "subject_options": "General Inquiry, Order Support, Other",
+        "button_text": "Send Message",
+        "success_message": "Thanks for reaching out. We'll get back to you soon."
+      }
+    }
+  },
+  "order": [
+    "drift_contact"
+  ]
+}

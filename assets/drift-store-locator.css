@@ -1,0 +1,650 @@
+/* ============================================
+   DRIFT Theme — Store Locator
+   Uses theme tokens (--drift-*) so it follows
+   the theme's light/dark mode automatically.
+   ============================================ */
+
+.drift-locator {
+  --locator-accent: #1FAE55;
+  --locator-accent-glow: rgba(31, 174, 85, 0.18);
+  --locator-stripe-a: #e9e9ea;
+  --locator-stripe-b: #f4f4f5;
+  padding: var(--drift-space-6, 48px) var(--drift-gutter, 16px) var(--drift-space-8, 64px);
+  background: var(--drift-bg);
+  color: var(--drift-text);
+}
+
+[data-drift-mode="dark"] .drift-locator {
+  --locator-accent: #39FF6A;
+  --locator-accent-glow: rgba(57, 255, 106, 0.25);
+  --locator-stripe-a: #1c1c1e;
+  --locator-stripe-b: #141416;
+}
+
+.drift-locator__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--drift-space-4, 32px);
+  max-width: var(--drift-page-max, 1440px);
+  margin: 0 auto;
+}
+
+.drift-locator__col {
+  flex: 1 1 480px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--drift-space-3, 20px);
+}
+
+/* ── Eyebrow ── */
+.drift-locator__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--drift-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--drift-tracking-caps);
+  text-transform: uppercase;
+  color: var(--drift-text-muted);
+}
+
+.drift-locator__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--drift-radius-full);
+  background: var(--locator-accent);
+  box-shadow: 0 0 0 4px var(--locator-accent-glow);
+}
+
+.drift-locator__heading {
+  margin: 0 0 12px;
+  font-family: var(--drift-font-heading);
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: var(--drift-tracking-tight);
+}
+
+.drift-locator__subheading {
+  margin: 0;
+  font-size: var(--drift-text-base);
+  line-height: 1.6;
+  color: var(--drift-text-muted);
+  max-width: 420px;
+}
+
+/* ── Locate button ── */
+.drift-locator__locate-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  background: var(--drift-btn-primary-bg);
+  color: var(--drift-btn-primary-text);
+  padding: 12px 18px;
+  border-radius: var(--drift-radius-full);
+  font-size: var(--drift-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--drift-tracking-wide);
+  text-transform: uppercase;
+  transition: filter var(--drift-duration-fast, .2s) var(--drift-ease, ease);
+}
+.drift-locator__locate-btn:hover { filter: brightness(1.08); }
+
+/* ── Globe ── */
+.drift-locator__globe-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1;
+  margin: 8px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drift-locator__orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: var(--drift-radius-full);
+  border: 1px solid rgba(140, 255, 180, 0.22);
+  pointer-events: none;
+}
+.drift-locator__orbit--1 {
+  width: 128%;
+  height: 128%;
+  animation: drift-locator-orbit 26s linear infinite;
+}
+.drift-locator__orbit--2 {
+  width: 150%;
+  height: 150%;
+  border-color: rgba(140, 255, 180, 0.12);
+  animation: drift-locator-orbit-rev 40s linear infinite;
+}
+
+@keyframes drift-locator-orbit {
+  from { transform: translate(-50%, -50%) rotateX(72deg) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotateX(72deg) rotate(360deg); }
+}
+@keyframes drift-locator-orbit-rev {
+  from { transform: translate(-50%, -50%) rotateX(72deg) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotateX(72deg) rotate(0deg); }
+}
+
+.drift-locator__sphere {
+  position: relative;
+  width: 82%;
+  height: 82%;
+  border-radius: var(--drift-radius-full);
+  overflow: hidden;
+  background: #010a14;
+  /* outer atmosphere glow */
+  box-shadow:
+    0 0 0 6px rgba(60, 140, 255, 0.12),
+    0 0 40px 12px rgba(40, 120, 255, 0.18),
+    0 0 80px 20px rgba(20, 80, 200, 0.12),
+    0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+.drift-locator__sphere-rotate {
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  height: 100%;
+  display: flex;
+  animation: drift-locator-spin 34s linear infinite;
+}
+
+@keyframes drift-locator-spin {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.drift-locator__sphere-band {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  flex-shrink: 0;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(1.6) contrast(1.3) saturate(1.2);
+}
+
+.drift-locator__sphere-img {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  filter: brightness(1.6) contrast(1.3) saturate(1.2);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Atmospheric glow — light from upper-left ── */
+.drift-locator__sphere-atmos {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--drift-radius-full);
+  background: radial-gradient(
+    ellipse 65% 55% at 28% 22%,
+    rgba(120, 180, 255, 0.13) 0%,
+    rgba(80, 140, 255, 0.06) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ── Deep shadow — right side makes sphere feel 3D ── */
+.drift-locator__sphere-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--drift-radius-full);
+  background: radial-gradient(
+    ellipse 55% 80% at 82% 60%,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.55) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ── Blue atmospheric rim around the whole sphere ── */
+.drift-locator__sphere-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--drift-radius-full);
+  box-shadow:
+    inset 0 0 0 3px rgba(80, 160, 255, 0.35),
+    inset 0 0 18px rgba(60, 130, 255, 0.25),
+    inset 0 0 50px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+/* Pure CSS Earth — no image needed */
+.drift-locator__sphere-band--css {
+  background:
+    /* city lights clusters */
+    radial-gradient(ellipse 6px 4px at 22% 28%, rgba(255,220,120,0.9) 0%, transparent 100%),
+    radial-gradient(ellipse 10px 6px at 35% 25%, rgba(255,210,100,0.7) 0%, transparent 100%),
+    radial-gradient(ellipse 14px 5px at 55% 22%, rgba(255,225,140,0.8) 0%, transparent 100%),
+    radial-gradient(ellipse 8px 4px at 70% 30%, rgba(255,200,90,0.6) 0%, transparent 100%),
+    radial-gradient(ellipse 12px 6px at 80% 27%, rgba(255,215,110,0.75) 0%, transparent 100%),
+    radial-gradient(ellipse 5px 3px at 88% 35%, rgba(255,210,100,0.6) 0%, transparent 100%),
+    radial-gradient(ellipse 9px 4px at 15% 45%, rgba(255,200,90,0.55) 0%, transparent 100%),
+    radial-gradient(ellipse 6px 3px at 28% 55%, rgba(255,215,110,0.5) 0%, transparent 100%),
+    radial-gradient(ellipse 18px 8px at 48% 48%, rgba(255,220,120,0.65) 0%, transparent 100%),
+    radial-gradient(ellipse 7px 4px at 62% 52%, rgba(255,205,95,0.55) 0%, transparent 100%),
+    radial-gradient(ellipse 10px 5px at 75% 45%, rgba(255,218,108,0.6) 0%, transparent 100%),
+    radial-gradient(ellipse 4px 3px at 92% 50%, rgba(255,200,90,0.5) 0%, transparent 100%),
+    radial-gradient(ellipse 6px 3px at 40% 68%, rgba(255,210,100,0.45) 0%, transparent 100%),
+    radial-gradient(ellipse 8px 4px at 58% 72%, rgba(255,215,110,0.5) 0%, transparent 100%),
+    radial-gradient(ellipse 5px 3px at 72% 65%, rgba(255,205,95,0.45) 0%, transparent 100%),
+    radial-gradient(ellipse 12px 5px at 85% 60%, rgba(255,220,120,0.55) 0%, transparent 100%),
+    /* oceans — dark blue */
+    radial-gradient(ellipse 60% 55% at 30% 40%, #0a1628 0%, #061020 100%),
+    radial-gradient(ellipse 70% 60% at 70% 55%, #081525 0%, #050e1a 100%),
+    /* continents — dark teal/green-gray */
+    radial-gradient(ellipse 18% 22% at 25% 35%, #0f2518 0%, transparent 100%),
+    radial-gradient(ellipse 22% 18% at 52% 30%, #0d2016 0%, transparent 100%),
+    radial-gradient(ellipse 15% 20% at 75% 38%, #0e2217 0%, transparent 100%),
+    radial-gradient(ellipse 12% 25% at 20% 60%, #0c1e14 0%, transparent 100%),
+    radial-gradient(ellipse 16% 18% at 55% 65%, #0d2016 0%, transparent 100%),
+    radial-gradient(ellipse 14% 16% at 82% 55%, #0e2015 0%, transparent 100%),
+    radial-gradient(ellipse 10% 14% at 65% 78%, #0c1e14 0%, transparent 100%),
+    /* base — deep space dark */
+    linear-gradient(180deg, #040d1a 0%, #020912 50%, #030b16 100%);
+  filter: brightness(1.3) contrast(1.1) saturate(1.2);
+}
+
+
+
+.drift-locator__pin {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: drift-locator-pin-bob 3.2s ease-in-out infinite;
+}
+
+@keyframes drift-locator-pin-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.drift-locator__pin-ring,
+.drift-locator__pin-dot {
+  position: absolute;
+  top: 0; left: 0;
+  border-radius: var(--drift-radius-full);
+  background: var(--locator-accent);
+}
+.drift-locator__pin-ring {
+  width: 20px;
+  height: 20px;
+  opacity: .5;
+  animation: drift-locator-pulse 1.8s ease-out infinite;
+}
+.drift-locator__pin-dot {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  box-shadow: 0 0 16px var(--locator-accent), 0 0 0 4px rgba(10, 10, 10, .5);
+}
+
+@keyframes drift-locator-pulse {
+  0% { transform: scale(.6); opacity: .9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+.drift-locator__globe-label {
+  position: absolute;
+  bottom: 6%;
+  font-size: var(--drift-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--drift-tracking-caps);
+  text-transform: uppercase;
+  color: #F5F5F7;
+  background: rgba(0, 0, 0, .55);
+  padding: 5px 11px;
+  border-radius: var(--drift-radius-full);
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+}
+
+/* ── Stat card ── */
+.drift-locator__stat {
+  background: var(--drift-surface);
+  border: 1px solid var(--drift-border);
+  border-radius: var(--drift-radius-lg);
+  padding: 20px 24px;
+  width: fit-content;
+}
+.drift-locator__stat-label {
+  font-size: var(--drift-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--drift-tracking-caps);
+  text-transform: uppercase;
+  color: var(--drift-text-muted);
+  margin-bottom: 6px;
+}
+.drift-locator__stat-row { display: flex; align-items: baseline; gap: 8px; }
+.drift-locator__stat-number {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--locator-accent);
+  line-height: 1;
+}
+.drift-locator__stat-scope { font-size: var(--drift-text-sm); color: var(--drift-text-muted); }
+
+/* ── Detail card ── */
+.drift-locator__detail-card {
+  background: var(--drift-surface);
+  border: 1px solid var(--drift-border);
+  border-radius: var(--drift-radius-lg);
+  padding: 22px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.drift-locator__detail-info {
+  flex: 1 1 260px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.drift-locator__detail-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--drift-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--drift-tracking-wide);
+  text-transform: uppercase;
+  color: var(--drift-text-muted);
+}
+.drift-locator__status { display: inline-flex; align-items: center; gap: 5px; color: var(--locator-accent); }
+.drift-locator__status.is-closed { color: #FF5B5B; }
+.drift-locator__status-dot {
+  width: 6px; height: 6px;
+  border-radius: var(--drift-radius-full);
+  background: currentColor;
+}
+.drift-locator__detail-name {
+  font-size: var(--drift-text-lg);
+  font-weight: 700;
+  letter-spacing: var(--drift-tracking-tight);
+}
+.drift-locator__detail-address {
+  font-size: var(--drift-text-sm);
+  line-height: 1.5;
+  color: var(--drift-text-muted);
+}
+.drift-locator__detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: var(--drift-text-xs);
+  color: var(--drift-text-muted);
+  margin-top: 2px;
+}
+.drift-locator__detail-meta-item { display: flex; align-items: center; gap: 6px; }
+.drift-locator__directions-btn {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  background: transparent;
+  color: var(--drift-btn-outline-text);
+  border: 1px solid var(--drift-btn-outline-border);
+  padding: 12px 18px;
+  border-radius: var(--drift-radius-full);
+  font-size: var(--drift-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--drift-tracking-wide);
+  text-transform: uppercase;
+  width: fit-content;
+  transition: filter .2s ease;
+}
+.drift-locator__directions-btn:hover { filter: brightness(1.08); }
+
+.drift-locator__detail-image {
+  flex: 1 1 200px;
+  min-width: 180px;
+  min-height: 150px;
+  border-radius: var(--drift-radius-md);
+  overflow: hidden;
+  position: relative;
+  background: repeating-linear-gradient(135deg, var(--locator-stripe-a) 0 10px, var(--locator-stripe-b) 10px 20px);
+  background-size: cover;
+  background-position: center;
+}
+.drift-locator__image-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: .04em;
+  color: var(--drift-text-muted);
+}
+
+/* ── City tabs ── */
+.drift-locator__tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.drift-locator__tab {
+  border: 1px solid var(--drift-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: var(--drift-radius-full);
+  font-size: var(--drift-text-xs);
+  font-weight: 600;
+  background: transparent;
+  color: var(--drift-text);
+  transition: all .2s ease;
+}
+.drift-locator__tab.is-active {
+  background: var(--drift-text);
+  color: var(--drift-bg);
+  border-color: var(--drift-text);
+}
+.drift-locator__tab-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--drift-radius-full);
+  background: var(--drift-border);
+  color: var(--drift-text-muted);
+}
+.drift-locator__tab.is-active .drift-locator__tab-count {
+  background: var(--drift-bg);
+  color: var(--drift-text);
+}
+
+/* ── Map ── */
+.drift-locator__map-wrap {
+  position: relative;
+  border-radius: var(--drift-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--drift-border);
+  aspect-ratio: 16 / 10.5;
+  background: var(--drift-surface);
+}
+.drift-locator__map {
+  position: absolute;
+  inset: 0;
+}
+.drift-locator__map-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  pointer-events: none;
+}
+.drift-locator__map-fallback.is-hidden { display: none; }
+.drift-locator__map-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(var(--drift-border) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, var(--drift-border) 0 1px, transparent 1px 46px);
+}
+.drift-locator__map-note {
+  position: relative;
+  max-width: 320px;
+  font-size: var(--drift-text-xs);
+  color: var(--drift-text-muted);
+  background: var(--drift-glass-bg);
+  backdrop-filter: blur(var(--drift-glass-blur));
+  padding: 12px 16px;
+  border-radius: var(--drift-radius-md);
+  border: 1px solid var(--drift-border);
+}
+
+/* ── Store list ── */
+.drift-locator__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--drift-border);
+  border-radius: var(--drift-radius-lg);
+  padding: 6px;
+}
+.drift-locator__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  padding: 11px 12px;
+  border-radius: var(--drift-radius-md);
+  transition: background .15s ease;
+}
+.drift-locator__row:hover,
+.drift-locator__row.is-active {
+  background: var(--drift-overlay, rgba(0,0,0,.04));
+}
+.drift-locator__row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.drift-locator__row-name {
+  font-size: var(--drift-text-sm);
+  font-weight: 600;
+  color: var(--drift-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drift-locator__row-sub {
+  font-size: var(--drift-text-xs);
+  color: var(--drift-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drift-locator__row-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--drift-radius-full);
+  background: var(--locator-accent);
+  flex-shrink: 0;
+}
+.drift-locator__row-dot.is-closed { background: #FF5B5B; }
+
+.drift-locator__empty {
+  border: 1px dashed var(--drift-border);
+  border-radius: var(--drift-radius-lg);
+  padding: 32px 20px;
+  text-align: center;
+  font-size: var(--drift-text-sm);
+  color: var(--drift-text-muted);
+}
+
+/* ── CTA banner ── */
+.drift-locator__cta {
+  background: var(--drift-surface);
+  border: 1px solid var(--drift-border);
+  border-radius: var(--drift-radius-lg);
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.drift-locator__cta-image {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--drift-radius-md);
+  flex-shrink: 0;
+  overflow: hidden;
+  background: repeating-linear-gradient(135deg, var(--locator-stripe-a) 0 8px, var(--locator-stripe-b) 8px 16px);
+}
+.drift-locator__cta-image img { width: 100%; height: 100%; object-fit: cover; }
+.drift-locator__cta-text { flex: 1 1 260px; min-width: 200px; }
+.drift-locator__cta-heading { font-size: var(--drift-text-base); font-weight: 700; margin-bottom: 3px; }
+.drift-locator__cta-body { font-size: var(--drift-text-xs); color: var(--drift-text-muted); line-height: 1.5; }
+.drift-locator__cta-btn {
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  background: var(--locator-accent);
+  color: #08130C;
+  padding: 12px 18px;
+  border-radius: var(--drift-radius-full);
+  font-size: var(--drift-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--drift-tracking-wide);
+  text-transform: uppercase;
+  transition: filter .2s ease;
+}
+.drift-locator__cta-btn:hover { filter: brightness(1.08); }
+
+/* ── Google Maps custom marker label ── */
+.drift-locator-gm-pin {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .35));
+}
+
+/* ── Inline SVG globe ── */
+.drift-locator__globe-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: visible;
+}

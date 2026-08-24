@@ -1,0 +1,110 @@
+{%- comment -%}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Cart Items — Markets-aware Liquid render
+  Used by drift-cart.js via Section Rendering API.
+  Renders both line items and subtotal so a single
+  fetch covers everything price-related in the drawer.
+  ============================================
+{%- endcomment -%}
+
+<span data-cart-render>
+  {%- if cart.item_count == 0 -%}
+    <span data-cart-state="empty">
+      <span class="drift-cart__empty">Cart is empty</span>
+    </span>
+  {%- else -%}
+    <span data-cart-state="filled">
+      <span data-cart-render-items>
+        {%- for item in cart.items -%}
+          {%- assign show_compare = false -%}
+          {%- assign compare_total = 0 -%}
+          {%- if item.variant.compare_at_price > item.variant.price -%}
+            {%- assign compare_total = item.variant.compare_at_price | times: item.quantity -%}
+            {%- if compare_total > item.final_line_price -%}
+              {%- assign show_compare = true -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          <span class="drift-cart__item" data-cart-item data-line-key="{{ item.key }}">
+            <span class="drift-cart__item-img-wrap">
+              {%- if item.image -%}
+                <img
+                  class="drift-cart__item-img"
+                  src="{{ item.image | image_url: width: 160 }}"
+                  alt="{{ item.product.title | escape }}"
+                  loading="lazy"
+                  width="80"
+                  height="80"
+                >
+              {%- endif -%}
+            </span>
+
+            <span class="drift-cart__item-details">
+              <span class="drift-cart__item-title-row">
+                <span class="drift-cart__item-title">{{ item.product.title | escape }}</span>
+                <span class="drift-cart__item-price">
+                  {%- if show_compare -%}
+                    <s class="drift-cart__item-compare">{{ compare_total | money_without_trailing_zeros }}</s> {{ item.final_line_price | money_without_trailing_zeros }}
+                  {%- else -%}
+                    {{ item.final_line_price | money_without_trailing_zeros }}
+                  {%- endif -%}
+                </span>
+              </span>
+
+              {%- if item.variant.title and item.variant.title != 'Default Title' -%}
+                <span class="drift-cart__item-variants">
+                  {%- assign parts = item.variant.title | split: ' / ' -%}
+                  {%- for part in parts -%}
+                    <span>{{ part | escape }}</span>
+                  {%- endfor -%}
+                </span>
+              {%- endif -%}
+
+              <span class="drift-cart__item-actions">
+                <span class="drift-cart__qty">
+                  <span class="drift-cart__qty-label">QTY</span>
+                  <button
+                    class="drift-cart__qty-btn"
+                    data-cart-qty="minus"
+                    data-line-key="{{ item.key }}"
+                    aria-label="Decrease quantity"
+                    {% if item.quantity <= 1 %}disabled{% endif %}
+                  >−</button>
+                  <span class="drift-cart__qty-count">{{ item.quantity }}</span>
+                  <button
+                    class="drift-cart__qty-btn"
+                    data-cart-qty="plus"
+                    data-line-key="{{ item.key }}"
+                    aria-label="Increase quantity"
+                  >+</button>
+                </span>
+                <button
+                  class="drift-cart__delete"
+                  data-cart-remove
+                  data-line-key="{{ item.key }}"
+                  aria-label="Remove {{ item.product.title | escape }}"
+                >Delete</button>
+              </span>
+            </span>
+          </span>
+        {%- endfor -%}
+      </span>
+    </span>
+  {%- endif -%}
+
+  <span data-cart-render-subtotal>
+    {%- if cart.original_total_price > cart.total_price -%}
+      <s class="drift-cart__checkout-compare">{{ cart.original_total_price | money_without_trailing_zeros }}</s> {{ cart.total_price | money_without_trailing_zeros }}
+    {%- else -%}
+      {{ cart.total_price | money_without_trailing_zeros }}
+    {%- endif -%}
+  </span>
+</span>
+
+{% schema %}
+{
+  "name": "DRIFT Cart Items",
+  "settings": []
+}
+{% endschema %}

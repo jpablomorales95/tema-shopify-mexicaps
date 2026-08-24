@@ -1,0 +1,716 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  https://webexp.dev
+  YouTube: @WEBEXP | Instagram: @webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign logo = section.settings.logo
+  assign logo_dark = section.settings.logo_dark
+  assign logo_height = section.settings.logo_height
+  assign logo_height_2x = logo_height | times: 2
+  assign menu = section.settings.menu
+  assign links = linklists[menu].links
+  assign has_socials = false
+  if settings.social_instagram_link != blank or settings.social_tiktok_link != blank or settings.social_youtube_link != blank or settings.social_twitter_link != blank or settings.social_facebook_link != blank
+    assign has_socials = true
+  endif
+  assign show_currency = section.settings.show_currency
+  assign show_language = section.settings.show_language
+  assign has_localization = false
+  if show_currency and localization.available_countries.size > 1
+    assign has_localization = true
+  endif
+  if show_language and localization.available_languages.size > 1
+    assign has_localization = true
+  endif
+-%}
+
+<header
+  class="drift-header"
+  data-section-id="{{ section.id }}"
+  data-section-type="drift-header"
+  {% if section.settings.nav_uppercase %}data-nav-caps{% endif %}
+>
+  <span class="drift-header__inner">
+    {%- comment -%} LEFT GROUP — Back Arrow + Logo {%- endcomment -%}
+    <span class="drift-header__left">
+      {%- if section.settings.show_back_arrow and request.page_type != 'index' -%}
+        <a href="{{ routes.root_url }}" class="drift-header__back drift-glass" aria-label="Go back" data-back-btn>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </a>
+      {%- endif -%}
+
+      {%- comment -%} LEFT PILL — Logo {%- endcomment -%}
+      <a href="{{ routes.root_url }}" class="drift-header__logo-pill{% if section.settings.show_logo_container %} drift-glass{% else %} drift-header__logo-pill--bare{% endif %}" aria-label="{{ shop.name }} — Home">
+        {%- if logo != blank and logo_dark != blank -%}
+          <img
+            src="{{ logo | image_url: height: logo_height_2x }}"
+            srcset="
+              {{ logo | image_url: height: logo_height }} 1x,
+              {{ logo | image_url: height: logo_height_2x }} 2x
+            "
+            alt="{{ logo.alt | default: shop.name | escape }}"
+            height="{{ logo_height }}"
+            loading="eager"
+            class="drift-header__logo-img drift-header__logo-img--light"
+            style="height: {{ logo_height }}px;"
+          >
+          <img
+            src="{{ logo_dark | image_url: height: logo_height_2x }}"
+            srcset="
+              {{ logo_dark | image_url: height: logo_height }} 1x,
+              {{ logo_dark | image_url: height: logo_height_2x }} 2x
+            "
+            alt="{{ logo_dark.alt | default: shop.name | escape }}"
+            height="{{ logo_height }}"
+            loading="eager"
+            class="drift-header__logo-img drift-header__logo-img--dark"
+            style="height: {{ logo_height }}px;"
+          >
+        {%- elsif logo != blank -%}
+          <img
+            src="{{ logo | image_url: height: logo_height_2x }}"
+            srcset="
+              {{ logo | image_url: height: logo_height }} 1x,
+              {{ logo | image_url: height: logo_height_2x }} 2x
+            "
+            alt="{{ logo.alt | default: shop.name | escape }}"
+            height="{{ logo_height }}"
+            loading="eager"
+            class="drift-header__logo-img"
+            style="height: {{ logo_height }}px;"
+          >
+        {%- elsif logo_dark != blank -%}
+          <img
+            src="{{ logo_dark | image_url: height: logo_height_2x }}"
+            srcset="
+              {{ logo_dark | image_url: height: logo_height }} 1x,
+              {{ logo_dark | image_url: height: logo_height_2x }} 2x
+            "
+            alt="{{ logo_dark.alt | default: shop.name | escape }}"
+            height="{{ logo_height }}"
+            loading="eager"
+            class="drift-header__logo-img"
+            style="height: {{ logo_height }}px;"
+          >
+        {%- else -%}
+          <svg class="drift-header__logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 547.94 547.93" fill="currentColor" aria-label="{{ shop.name }}" style="height: {{ logo_height }}px; width: auto;">
+            <path d="M440.56,383.47c-60.48,0-109.51-49.03-109.51-109.51s49.03-109.51,109.51-109.51c53.1,0,97.37,37.8,107.38,87.96C537.49,117.84,430.11,10.45,295.53,0c50.15,10.02,87.94,54.28,87.94,107.37,0,60.48-49.03,109.51-109.51,109.51s-109.51-49.03-109.51-109.51c.01-53.09,37.8-97.35,87.95-107.37C117.82,10.45,10.44,117.84,0,252.42c10.01-50.16,54.27-87.97,107.38-87.97,60.48,0,109.51,49.03,109.51,109.51s-49.03,109.51-109.51,109.51c-53.1,0-97.37-37.8-107.38-87.97,10.44,134.6,117.85,242,252.45,242.43-50.17-10-87.99-54.27-87.99-107.38,0-60.48,49.03-109.51,109.51-109.51s109.51,49.03,109.51,109.51c0,53.11-37.82,97.38-87.99,107.38,134.6-10.43,242.01-117.83,252.45-252.43-10.01,50.16-54.27,87.97-107.38,87.97Z"/>
+            <path d="M53.06,233.41h23.15l8.33,45.41,12.2-45.41h23.07l12.23,45.34,8.34-45.34h23.03l-17.39,81.11h-23.9l-13.83-51.06-13.78,51.06h-23.9l-17.55-81.11Z"/>
+            <path d="M397.65,233.41h55.45c9.24,0,16.34,1.94,21.29,5.81s7.42,8.67,7.42,14.38c0,4.79-1.77,8.91-5.3,12.34-2.35,2.29-5.8,4.09-10.33,5.42,6.89,1.4,11.96,3.81,15.2,7.22,3.25,3.41,4.87,7.7,4.87,12.86,0,4.2-1.16,7.99-3.47,11.34-2.31,3.36-5.47,6.01-9.48,7.97-2.48,1.22-6.23,2.1-11.25,2.66-6.67.74-11.09,1.11-13.27,1.11h-51.14v-81.11ZM427.53,265.22h12.88c4.62,0,7.84-.67,9.65-2.02s2.71-3.29,2.71-5.84-.9-4.2-2.71-5.53-4.96-1.99-9.45-1.99h-13.08v15.38ZM427.53,297.09h15.11c5.1,0,8.7-.77,10.79-2.3s3.14-3.59,3.14-6.17c0-2.4-1.04-4.32-3.11-5.78-2.07-1.46-5.7-2.19-10.89-2.19h-15.04v16.44Z"/>
+            <path d="M234.18,63.45h78.15v17.32h-48.92v12.89h45.38v16.54h-45.38v15.99h50.34v18.37h-79.56V63.45Z"/>
+            <path d="M234.97,396.29h47.21c10.28,0,17.98,2.16,23.1,6.47,5.12,4.32,7.68,10.46,7.68,18.42s-2.79,14.59-8.37,19.2-14.1,6.92-25.55,6.92h-15.55v30.1h-28.52v-81.11ZM263.49,430.87h6.96c5.48,0,9.32-.84,11.54-2.52s3.32-3.83,3.32-6.45-.96-4.7-2.88-6.47-5.54-2.66-10.85-2.66h-8.09v18.1Z"/>
+          </svg>
+        {%- endif -%}
+      </a>
+    </span>
+
+    {%- comment -%} RIGHT PILL — Actions + Nav {%- endcomment -%}
+    <span class="drift-header__actions-pill drift-glass" data-header-actions>
+      {%- comment -%} Dark / Light toggle {%- endcomment -%}
+      <button
+        type="button"
+        class="drift-icon-btn drift-header__mode-toggle"
+        data-mode-toggle
+        aria-label="Toggle dark mode"
+      >
+        <svg class="drift-header__icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="drift-header__icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
+      {%- comment -%} View toggle — feed/grid. Always rendered; CSS hides
+         it unless the page contains a Collection or Product Feed section. {%- endcomment -%}
+      <button
+        type="button"
+        class="drift-icon-btn drift-header__view-toggle"
+        data-view-toggle
+        aria-label="Toggle grid view"
+      >
+        <svg class="drift-header__icon-grid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+        </svg>
+        <svg class="drift-header__icon-feed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="2" x2="12" y2="22"/>
+          <polyline points="6 7 12 2 18 7"/>
+          <polyline points="6 17 12 22 18 17"/>
+        </svg>
+      </button>
+
+      {%- comment -%} Desktop nav links (visible when menu open on desktop) {%- endcomment -%}
+      {%- if links.size > 0 -%}
+        <nav class="drift-header__nav-inline" data-header-nav-inline aria-label="Main navigation">
+          {%- for link in links -%}
+            {%- if link.links.size > 0 -%}
+              <span class="drift-header__nav-parent" data-nav-parent>
+                <button
+                  type="button"
+                  class="drift-header__nav-link"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  data-submenu-toggle
+                >
+                  {{ link.title | escape }}
+                </button>
+                <span class="drift-header__submenu drift-glass" data-submenu aria-hidden="true">
+                  {%- for child in link.links -%}
+                    <a
+                      href="{{ child.url }}"
+                      class="drift-header__submenu-link"
+                      {% if child.current %} aria-current="page"{% endif %}
+                    >
+                      {{ child.title | escape }}
+                    </a>
+                  {%- endfor -%}
+                </span>
+              </span>
+            {%- else -%}
+              <a
+                href="{{ link.url }}"
+                class="drift-header__nav-link"
+                {% if link.current %} aria-current="page"{% endif %}
+              >
+                {{ link.title | escape }}
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if section.settings.show_policies_link -%}
+            <a
+              href="{{ pages['policies'].url | default: '/pages/policies' }}"
+              class="drift-header__nav-link"
+              {% if request.path == '/pages/policies' %} aria-current="page"{% endif %}
+            >
+              Policies
+            </a>
+          {%- endif -%}
+          {%- if has_socials -%}
+            <span class="drift-header__nav-socials">
+              {% render 'social-icons', class: 'drift-header__social-list' %}
+            </span>
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+
+      {%- comment -%} Search icon (desktop only) {%- endcomment -%}
+      {%- if section.settings.show_search -%}
+        <a
+          href="{{ routes.search_url }}"
+          class="drift-icon-btn drift-header__search drift-header__desktop-only"
+          aria-label="Search"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </a>
+      {%- endif -%}
+
+      {%- comment -%} Account icon (desktop only) {%- endcomment -%}
+      {%- if section.settings.show_account -%}
+        <a
+          href="{{ routes.account_url | default: '/account' }}"
+          class="drift-icon-btn drift-header__account drift-header__desktop-only"
+          aria-label="Account"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </a>
+      {%- endif -%}
+
+      {%- comment -%} Cart count bubble {%- endcomment -%}
+      <a
+        href="{{ routes.cart_url }}"
+        class="drift-header__cart"
+        data-cart-bubble
+        aria-label="Cart"
+        {% if cart.item_count == 0 %} hidden{% endif %}
+      >
+        <span class="drift-header__cart-count" data-cart-count>
+          {{ cart.item_count }}
+        </span>
+      </a>
+
+      {%- comment -%} Menu toggle {%- endcomment -%}
+      <button
+        type="button"
+        class="drift-icon-btn drift-header__menu-toggle"
+        data-menu-toggle
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="drift-mobile-drawer"
+      >
+        <svg class="drift-header__icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true">
+          <line x1="12" y1="3" x2="12" y2="21"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+        </svg>
+        <svg class="drift-header__icon-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </span>
+
+    {%- comment -%} DESKTOP LOCALIZATION — far right pill {%- endcomment -%}
+    {%- if has_localization -%}
+      <span class="drift-header__locale-pill drift-glass drift-header__desktop-only" data-locale-toggle>
+        {%- if show_currency and localization.available_countries.size > 1 -%}
+          <span class="drift-header__locale-label" data-locale-currency-label>{{ localization.country.currency.iso_code }}</span>
+        {%- endif -%}
+        {%- if show_currency and localization.available_countries.size > 1 and show_language and localization.available_languages.size > 1 -%}
+          <span class="drift-header__locale-sep">·</span>
+        {%- endif -%}
+        {%- if show_language and localization.available_languages.size > 1 -%}
+          <span class="drift-header__locale-label" data-locale-lang-label>{{ localization.language.endonym_name | capitalize }}</span>
+        {%- endif -%}
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </span>
+
+      {%- comment -%} Desktop locale dropdown {%- endcomment -%}
+      <span class="drift-header__locale-dropdown drift-glass drift-header__desktop-only" data-locale-dropdown aria-hidden="true">
+        {%- if show_currency and localization.available_countries.size > 1 -%}
+          <span class="drift-header__locale-section">
+            <span class="drift-header__locale-heading">Currency</span>
+            {%- form 'localization', id: 'desktop-currency-form' -%}
+              {%- assign seen_currencies = '' -%}
+              <span class="drift-header__locale-options" data-locale-options="currency">
+                {%- for country in localization.available_countries -%}
+                  {%- assign currency_key = country.currency.iso_code -%}
+                  {%- unless seen_currencies contains currency_key -%}
+                    {%- if seen_currencies != '' -%}
+                      {%- assign seen_currencies = seen_currencies | append: ',' | append: currency_key -%}
+                    {%- else -%}
+                      {%- assign seen_currencies = currency_key -%}
+                    {%- endif -%}
+                    <button
+                      type="submit"
+                      name="country_code"
+                      value="{{ country.iso_code }}"
+                      class="drift-header__locale-option{% if country.currency.iso_code == localization.country.currency.iso_code %} is-active{% endif %}"
+                    >
+                      {{ country.currency.iso_code }} ({{ country.currency.symbol }})
+                    </button>
+                  {%- endunless -%}
+                {%- endfor -%}
+              </span>
+            {%- endform -%}
+          </span>
+        {%- endif -%}
+
+        {%- if show_language and localization.available_languages.size > 1 -%}
+          <span class="drift-header__locale-section">
+            <span class="drift-header__locale-heading">Language</span>
+            {%- form 'localization', id: 'desktop-language-form' -%}
+              <span class="drift-header__locale-options" data-locale-options="language">
+                {%- for language in localization.available_languages -%}
+                  <button
+                    type="submit"
+                    name="locale_code"
+                    value="{{ language.iso_code }}"
+                    class="drift-header__locale-option{% if language.iso_code == localization.language.iso_code %} is-active{% endif %}"
+                  >
+                    {{ language.endonym_name | capitalize }}
+                  </button>
+                {%- endfor -%}
+              </span>
+            {%- endform -%}
+          </span>
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+  </span>
+
+  {%- comment -%} MOBILE DRAWER {%- endcomment -%}
+  <span
+    class="drift-header__drawer drift-glass"
+    id="drift-mobile-drawer"
+    data-header-drawer
+    aria-hidden="true"
+  >
+    {%- comment -%} Main panel {%- endcomment -%}
+    <span class="drift-header__drawer-panel drift-header__drawer-panel--main" data-drawer-panel="main">
+      {%- if links.size > 0 -%}
+        <nav class="drift-header__drawer-nav" aria-label="Mobile navigation">
+          {%- for link in links -%}
+            {%- if link.links.size > 0 -%}
+              <button
+                type="button"
+                class="drift-header__drawer-link"
+                data-drawer-to="{{ link.title | handleize }}"
+              >
+                <span class="drift-header__drawer-link-text">{{ link.title | escape }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-header__drawer-arrow" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            {%- else -%}
+              <a
+                href="{{ link.url }}"
+                class="drift-header__drawer-link"
+                {% if link.current %} aria-current="page"{% endif %}
+                tabindex="-1"
+              >
+                <span class="drift-header__drawer-link-text">{{ link.title | escape }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-header__drawer-arrow" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if section.settings.show_policies_link -%}
+            <a
+              href="{{ pages['policies'].url | default: '/pages/policies' }}"
+              class="drift-header__drawer-link"
+              {% if request.path == '/pages/policies' %} aria-current="page"{% endif %}
+              tabindex="-1"
+            >
+              <span class="drift-header__drawer-link-text">Policies</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-header__drawer-arrow" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </a>
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+
+      {%- if section.settings.show_search -%}
+        <a href="{{ routes.search_url }}" class="drift-header__drawer-link" tabindex="-1">
+          <span class="drift-header__drawer-link-text">Search</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-header__drawer-arrow" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      {%- endif -%}
+      {%- if section.settings.show_account -%}
+        <a href="{{ routes.account_url | default: '/account' }}" class="drift-header__drawer-link" tabindex="-1">
+          <span class="drift-header__drawer-link-text">Account</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-header__drawer-arrow" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      {%- endif -%}
+
+      {%- if has_socials -%}
+        <span class="drift-header__drawer-socials">
+          {% render 'social-icons', class: 'drift-header__social-list' %}
+        </span>
+      {%- endif -%}
+
+      {%- comment -%} Mobile Localization — native select dropdowns, side by side {%- endcomment -%}
+      {%- if has_localization -%}
+        <span class="drift-header__drawer-locale">
+          {%- if show_currency and localization.available_countries.size > 1 -%}
+            <span class="drift-header__drawer-locale-group">
+              <span class="drift-header__locale-heading">Currency</span>
+              {%- form 'localization', id: 'mobile-currency-form' -%}
+                <span class="drift-header__drawer-locale-select-wrap">
+                  <select
+                    class="drift-header__drawer-locale-select"
+                    data-mobile-currency-select
+                    aria-label="Select currency"
+                  >
+                    {%- assign seen_currencies = '' -%}
+                    {%- for country in localization.available_countries -%}
+                      {%- assign currency_key = country.currency.iso_code -%}
+                      {%- unless seen_currencies contains currency_key -%}
+                        {%- if seen_currencies != '' -%}
+                          {%- assign seen_currencies = seen_currencies | append: ',' | append: currency_key -%}
+                        {%- else -%}
+                          {%- assign seen_currencies = currency_key -%}
+                        {%- endif -%}
+                        <option
+                          value="{{ country.iso_code }}"
+                          {% if country.currency.iso_code == localization.country.currency.iso_code %}selected{% endif %}
+                        >
+                          {{ country.currency.iso_code }} ({{ country.currency.symbol }})
+                        </option>
+                      {%- endunless -%}
+                    {%- endfor -%}
+                  </select>
+                  <svg class="drift-header__drawer-locale-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+                <input type="hidden" name="country_code" data-mobile-currency-input>
+              {%- endform -%}
+            </span>
+          {%- endif -%}
+
+          {%- if show_language and localization.available_languages.size > 1 -%}
+            <span class="drift-header__drawer-locale-group">
+              <span class="drift-header__locale-heading">Language</span>
+              {%- form 'localization', id: 'mobile-language-form' -%}
+                <span class="drift-header__drawer-locale-select-wrap">
+                  <select
+                    class="drift-header__drawer-locale-select"
+                    data-mobile-language-select
+                    aria-label="Select language"
+                  >
+                    {%- for language in localization.available_languages -%}
+                      <option
+                        value="{{ language.iso_code }}"
+                        {% if language.iso_code == localization.language.iso_code %}selected{% endif %}
+                      >
+                        {{ language.endonym_name | capitalize }}
+                      </option>
+                    {%- endfor -%}
+                  </select>
+                  <svg class="drift-header__drawer-locale-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+                <input type="hidden" name="locale_code" data-mobile-language-input>
+              {%- endform -%}
+            </span>
+          {%- endif -%}
+        </span>
+      {%- endif -%}
+    </span>
+
+    {%- comment -%} Child panels {%- endcomment -%}
+    {%- for link in links -%}
+      {%- if link.links.size > 0 -%}
+        <span class="drift-header__drawer-panel drift-header__drawer-panel--child" data-drawer-panel="{{ link.title | handleize }}">
+          <button
+            type="button"
+            class="drift-header__drawer-back"
+            data-drawer-back
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-header__drawer-back-icon" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            <span class="drift-header__drawer-link-text">{{ link.title | escape }}</span>
+          </button>
+          <nav class="drift-header__drawer-nav" aria-label="{{ link.title | escape }} submenu">
+            {%- for child in link.links -%}
+              <a
+                href="{{ child.url }}"
+                class="drift-header__drawer-link"
+                {% if child.current %} aria-current="page"{% endif %}
+                tabindex="-1"
+              >
+                <span class="drift-header__drawer-link-text">{{ child.title | escape }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" class="drift-header__drawer-arrow" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </a>
+            {%- endfor -%}
+          </nav>
+        </span>
+      {%- endif -%}
+    {%- endfor -%}
+  </span>
+
+  {%- comment -%} Backdrop {%- endcomment -%}
+  <span class="drift-header__backdrop" data-header-backdrop aria-hidden="true"></span>
+
+  {%- comment -%} Smart back button {%- endcomment -%}
+  <script>
+    (function() {
+      var btn = document.querySelector('[data-back-btn]');
+      if (!btn) return;
+      var params = new URLSearchParams(window.location.search);
+      var col = params.get('collection');
+      var from = params.get('from');
+      var idx = params.get('feed_index');
+      if (col) {
+        var backUrl = decodeURIComponent(col);
+        if (idx !== null) backUrl += (backUrl.indexOf('?') > -1 ? '&' : '?') + 'feed_index=' + idx;
+        btn.href = backUrl;
+        btn.setAttribute('aria-label', 'Back to collection');
+      } else if (from === 'drift' && idx !== null) {
+        var base = btn.getAttribute('href');
+        btn.href = base + (base.indexOf('?') > -1 ? '&' : '?') + 'feed_index=' + idx;
+        btn.setAttribute('aria-label', 'Back to feed');
+      }
+    })();
+  </script>
+
+  {%- comment -%} Locale dropdown toggle {%- endcomment -%}
+  {%- if has_localization -%}
+    <script>
+      (function() {
+        var toggle = document.querySelector('[data-locale-toggle]');
+        var dropdown = document.querySelector('[data-locale-dropdown]');
+        if (!toggle || !dropdown) return;
+        toggle.addEventListener('click', function() {
+          var open = dropdown.classList.contains('is-open');
+          dropdown.classList.toggle('is-open', !open);
+          dropdown.setAttribute('aria-hidden', String(open));
+        });
+        document.addEventListener('click', function(e) {
+          if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('is-open');
+            dropdown.setAttribute('aria-hidden', 'true');
+          }
+        });
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            dropdown.classList.remove('is-open');
+            dropdown.setAttribute('aria-hidden', 'true');
+          }
+        });
+      })();
+    </script>
+  {%- endif -%}
+
+  {%- comment -%} Mobile locale select handlers {%- endcomment -%}
+  {%- if has_localization -%}
+    <script>
+      (function() {
+        var cs = document.querySelector('[data-mobile-currency-select]');
+        if (cs) {
+          cs.addEventListener('change', function() {
+            var f = this.closest('form');
+            f.querySelector('[data-mobile-currency-input]').value = this.value;
+            f.submit();
+          });
+        }
+        var ls = document.querySelector('[data-mobile-language-select]');
+        if (ls) {
+          ls.addEventListener('change', function() {
+            var f = this.closest('form');
+            f.querySelector('[data-mobile-language-input]').value = this.value;
+            f.submit();
+          });
+        }
+      })();
+    </script>
+  {%- endif -%}
+</header>
+
+<span class="drift-header__spacer"></span>
+
+{% schema %}
+{
+  "name": "DRIFT Header",
+  "tag": "section",
+  "class": "drift-header-section",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image (light mode)",
+      "info": "Upload your logo. If left empty, the WEBEXP logo is shown by default."
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_dark",
+      "label": "Logo image (dark mode)",
+      "info": "Shown when dark mode is active. Falls back to the light mode logo if not set."
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo height (px)",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_logo_container",
+      "label": "Show logo container",
+      "info": "Wraps the logo in a rounded pill with a glassmorphic background. Turn off for wide wordmark logos that look cramped inside a container.",
+      "default": true
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Navigation menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "nav_uppercase",
+      "label": "Uppercase navigation links",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_policies_link",
+      "label": "Auto-add Policies link",
+      "info": "Appends a Policies link to the end of your navigation. Links to /pages/policies.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_back_arrow",
+      "label": "Show back arrow",
+      "info": "Displays a back arrow next to the logo on inner pages that links back to the homepage.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search icon",
+      "info": "Displays a search icon in the header that links to the search page.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Show account icon",
+      "info": "Displays an account icon in the header that links to the customer account page.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Localization"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_currency",
+      "label": "Show currency selector",
+      "info": "Displays a currency picker. Requires multiple markets enabled in Shopify Admin → Settings → Markets.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_language",
+      "label": "Show language selector",
+      "info": "Displays a language picker. Requires multiple languages enabled in Shopify Admin → Settings → Languages.",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Header"
+    }
+  ]
+}
+{% endschema %}

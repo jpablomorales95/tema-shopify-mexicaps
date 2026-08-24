@@ -1,0 +1,92 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  DRIFT Footer — V1 Minimal
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<footer class="drift-footer" data-section-id="{{ section.id }}" data-section-type="drift-footer">
+  <span class="drift-footer__inner">
+    <span class="drift-footer__copyright">
+      &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}
+    </span>
+    <span class="drift-footer__credit">
+      Powered by <a href="https://webexp.dev" target="_blank" rel="noopener">WEBEXP</a>
+    </span>
+  </span>
+</footer>
+
+<style>
+  .drift-footer {
+    display: flex;
+    justify-content: center;
+    padding: var(--drift-space-3) var(--drift-space-2);
+  }
+
+  /* Pin footer to bottom on full-viewport pages */
+  body:has(.drift-feed) .drift-footer,
+  body:has(.drift-collection) .drift-footer,
+  body:has(.drift-pdp) .drift-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--drift-z-card);
+    pointer-events: none;
+  }
+
+  body:has(.drift-feed) .drift-footer a,
+  body:has(.drift-collection) .drift-footer a,
+  body:has(.drift-pdp) .drift-footer a {
+    pointer-events: auto;
+  }
+
+  .drift-footer__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .drift-footer__copyright {
+    font-size: var(--drift-text-xs);
+    color: var(--drift-text-muted);
+    letter-spacing: var(--drift-tracking-caps);
+    text-transform: uppercase;
+  }
+
+  .drift-footer__credit {
+    font-size: 0.6rem;
+    color: var(--drift-text-muted);
+    letter-spacing: var(--drift-tracking-caps);
+    text-transform: uppercase;
+  }
+
+  .drift-footer__credit a {
+    color: var(--drift-text-muted);
+    text-decoration: none;
+    transition: color var(--drift-duration-fast) var(--drift-ease);
+  }
+
+  .drift-footer__credit a:hover {
+    color: var(--drift-text);
+  }
+</style>
+
+{% schema %}
+{
+  "name": "DRIFT Footer",
+  "tag": "section",
+  "class": "drift-footer-section",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [],
+  "presets": [
+    {
+      "name": "DRIFT Footer"
+    }
+  ]
+}
+{% endschema %}

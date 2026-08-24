@@ -1,0 +1,264 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Video Hero Section
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign video_type = section.settings.video_type
+  assign behavior = section.settings.behavior
+  assign autoplay = false
+  if behavior == 'autoplay'
+    assign autoplay = true
+  endif
+-%}
+
+<section class="drift-video-hero" data-drift-video-hero data-behavior="{{ behavior }}">
+  <span class="drift-video-hero__container">
+    <span class="drift-video-hero__card drift-glass">
+
+      {%- comment -%} Video wrapper {%- endcomment -%}
+      <span class="drift-video-hero__media" data-video-media>
+
+        {%- if video_type == 'shopify' and section.settings.shopify_video != blank -%}
+          {%- comment -%} Shopify hosted video {%- endcomment -%}
+          {{
+            section.settings.shopify_video
+            | video_tag:
+              autoplay: autoplay,
+              loop: autoplay,
+              muted: autoplay,
+              playsinline: true,
+              controls: false,
+              class: 'drift-video-hero__video',
+              image_size: '1920x',
+              data-video-el: ''
+          }}
+
+        {%- elsif video_type == 'external' and section.settings.external_url != blank -%}
+          {%- comment -%} YouTube / Vimeo embed {%- endcomment -%}
+          {%- assign video_url = section.settings.external_url -%}
+
+          {%- if video_url contains 'youtube.com' or video_url contains 'youtu.be' -%}
+            {%- liquid
+              if video_url contains 'youtu.be/'
+                assign yt_id = video_url | split: 'youtu.be/' | last | split: '?' | first
+              elsif video_url contains 'v='
+                assign yt_id = video_url | split: 'v=' | last | split: '&' | first
+              endif
+            -%}
+            {%- if yt_id != blank -%}
+              <span class="drift-video-hero__embed" data-video-embed>
+                {%- if autoplay -%}
+                  <iframe
+                    src="https://www.youtube.com/embed/{{ yt_id }}?autoplay=1&mute=1&loop=1&playlist={{ yt_id }}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+                    class="drift-video-hero__iframe"
+                    frameborder="0"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                    loading="lazy"
+                    data-video-el
+                  ></iframe>
+                {%- else -%}
+                  <iframe
+                    src="https://www.youtube.com/embed/{{ yt_id }}?controls=1&rel=0&modestbranding=1&playsinline=1"
+                    class="drift-video-hero__iframe"
+                    frameborder="0"
+                    allow="encrypted-media"
+                    allowfullscreen
+                    loading="lazy"
+                    data-video-el
+                  ></iframe>
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+
+          {%- elsif video_url contains 'vimeo.com' -%}
+            {%- assign vimeo_id = video_url | split: 'vimeo.com/' | last | split: '?' | first | split: '/' | first -%}
+            {%- if vimeo_id != blank -%}
+              <span class="drift-video-hero__embed" data-video-embed>
+                {%- if autoplay -%}
+                  <iframe
+                    src="https://player.vimeo.com/video/{{ vimeo_id }}?autoplay=1&muted=1&loop=1&background=1&playsinline=1"
+                    class="drift-video-hero__iframe"
+                    frameborder="0"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                    loading="lazy"
+                    data-video-el
+                  ></iframe>
+                {%- else -%}
+                  <iframe
+                    src="https://player.vimeo.com/video/{{ vimeo_id }}?playsinline=1"
+                    class="drift-video-hero__iframe"
+                    frameborder="0"
+                    allow="encrypted-media"
+                    allowfullscreen
+                    loading="lazy"
+                    data-video-el
+                  ></iframe>
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+          {%- endif -%}
+
+        {%- else -%}
+          {%- comment -%} Placeholder {%- endcomment -%}
+          <span class="drift-video-hero__placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </span>
+        {%- endif -%}
+
+        {%- comment -%} Click-to-play overlay for Shopify video {%- endcomment -%}
+        {%- if video_type == 'shopify' and behavior == 'click' and section.settings.shopify_video != blank -%}
+          <button class="drift-video-hero__play" data-video-play aria-label="Play video" type="button">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </button>
+        {%- endif -%}
+
+      </span>
+
+      {%- comment -%} Content below video {%- endcomment -%}
+      {%- if section.settings.show_content -%}
+        <span class="drift-video-hero__content">
+
+          {%- if section.settings.heading != blank -%}
+            <h2 class="drift-video-hero__heading">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+
+          {%- if section.settings.subtext != blank -%}
+            <p class="drift-video-hero__subtext">{{ section.settings.subtext }}</p>
+          {%- endif -%}
+
+          {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+            <a
+              href="{{ section.settings.button_link }}"
+              class="drift-btn drift-btn--primary drift-video-hero__btn"
+            >
+              {{ section.settings.button_label }}
+            </a>
+          {%- endif -%}
+
+        </span>
+      {%- endif -%}
+
+    </span>
+  </span>
+</section>
+
+<script>
+  (function () {
+    var section = document.querySelector('[data-drift-video-hero]');
+    if (!section) return;
+    var behavior = section.getAttribute('data-behavior');
+    if (behavior !== 'click') return;
+
+    var playBtn = section.querySelector('[data-video-play]');
+    var video = section.querySelector('[data-video-el]');
+    if (!playBtn || !video) return;
+
+    playBtn.addEventListener('click', function () {
+      video.muted = false;
+      video.controls = true;
+      video.play();
+      playBtn.classList.add('is-hidden');
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Video Hero",
+  "class": "drift-section-video-hero",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Video Source"
+    },
+    {
+      "type": "select",
+      "id": "video_type",
+      "label": "Video source",
+      "options": [
+        { "value": "shopify", "label": "Shopify hosted" },
+        { "value": "external", "label": "YouTube / Vimeo URL" }
+      ],
+      "default": "shopify"
+    },
+    {
+      "type": "video",
+      "id": "shopify_video",
+      "label": "Shopify video",
+      "info": "Upload a video in Settings → Files, then select it here."
+    },
+    {
+      "type": "text",
+      "id": "external_url",
+      "label": "YouTube or Vimeo URL",
+      "info": "Paste a full YouTube or Vimeo video URL."
+    },
+    {
+      "type": "header",
+      "content": "Playback"
+    },
+    {
+      "type": "select",
+      "id": "behavior",
+      "label": "Playback behavior",
+      "options": [
+        { "value": "autoplay", "label": "Autoplay (muted, looping)" },
+        { "value": "click", "label": "Click to play" }
+      ],
+      "default": "autoplay",
+      "info": "Autoplay plays silently in the background. Click to play shows a play button over the video poster."
+    },
+    {
+      "type": "header",
+      "content": "Content Overlay"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_content",
+      "label": "Show text content",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "New Collection"
+    },
+    {
+      "type": "textarea",
+      "id": "subtext",
+      "label": "Subtext"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video Hero"
+    }
+  ]
+}
+{% endschema %}

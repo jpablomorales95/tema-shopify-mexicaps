@@ -1,0 +1,111 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Cart Drawer — Dropdown panel anchored to header
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<span
+  class="drift-cart"
+  data-cart-drawer
+  role="dialog"
+  aria-label="Shopping cart"
+  aria-hidden="true"
+>
+  {%- comment -%} Backdrop — mobile only {%- endcomment -%}
+  <span class="drift-cart__backdrop" data-cart-backdrop></span>
+
+  {%- comment -%} Panel {%- endcomment -%}
+  <span class="drift-cart__panel drift-glass" data-cart-panel>
+
+    {%- comment -%} Header row {%- endcomment -%}
+    <span class="drift-cart__header">
+      <span class="drift-cart__title">Cart</span>
+      <button
+        class="drift-icon-btn drift-cart__close"
+        data-cart-close
+        aria-label="Close cart"
+        type="button"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </span>
+
+    {%- comment -%} Separator {%- endcomment -%}
+    <span class="drift-cart__sep"></span>
+
+    {%- comment -%} Free Shipping Progress Bar (V2) {%- endcomment -%}
+    {%- if settings.cart_free_shipping_enabled -%}
+      <span
+        class="drift-cart__shipping"
+        data-cart-shipping
+        data-shipping-threshold="{{ settings.cart_free_shipping_threshold }}"
+        hidden
+      >
+        <span class="drift-cart__shipping-text" data-cart-shipping-text></span>
+        <span class="drift-cart__shipping-track">
+          <span class="drift-cart__shipping-fill" data-cart-shipping-fill></span>
+        </span>
+      </span>
+    {%- endif -%}
+
+    {%- comment -%} Line items — populated by JS {%- endcomment -%}
+    <span class="drift-cart__items" data-cart-items>
+      {%- comment -%} JS renders items here via renderCart() {%- endcomment -%}
+    </span>
+
+    {%- comment -%} Cart Upsell — Collapsible (V3).
+         Default-expanded state is per-viewport (desktop vs mobile)
+         and applied by JS on init based on window.innerWidth. {%- endcomment -%}
+    {%- if settings.cart_upsell_enabled -%}
+      <span
+        class="drift-cart__upsell"
+        data-cart-upsell
+        data-upsell-default-expanded-desktop="{{ settings.cart_upsell_expanded_desktop }}"
+        data-upsell-limit="{{ settings.cart_upsell_limit | default: 4 }}"
+        hidden
+      >
+        <button
+          class="drift-cart__upsell-toggle"
+          data-cart-upsell-toggle
+          type="button"
+          aria-expanded="false"
+        >
+          <span class="drift-cart__upsell-heading">{{ settings.cart_upsell_heading | default: 'You might also like' }}</span>
+          <svg class="drift-cart__upsell-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <span class="drift-cart__upsell-body" data-cart-upsell-body>
+          <span class="drift-cart__upsell-scroll" data-cart-upsell-scroll>
+            {%- comment -%} JS populates product cards here {%- endcomment -%}
+          </span>
+        </span>
+      </span>
+    {%- endif -%}
+
+    {%- comment -%} Footer — checkout button with subtotal baked in {%- endcomment -%}
+    <span class="drift-cart__footer" data-cart-footer>
+      <a
+        href="/checkout"
+        class="drift-btn drift-btn--primary drift-cart__checkout"
+        data-cart-checkout
+      >
+        <span class="drift-cart__checkout-label">Checkout</span>
+        <span class="drift-cart__checkout-total" data-cart-subtotal>$0</span>
+      </a>
+      {%- if additional_checkout_buttons and settings.cart_show_dynamic_buttons -%}
+        <span class="drift-cart__dynamic-buttons">
+          <form action="{{ routes.cart_url }}" method="post">
+            {{ content_for_additional_checkout_buttons }}
+          </form>
+        </span>
+      {%- endif -%}
+    </span>
+
+  </span>
+</span>

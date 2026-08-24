@@ -1,0 +1,176 @@
+{% comment %}
+  ============================================
+  DRIFT — Logo List / Press Bar
+  By WEBEXP | webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- style -%}
+  #DriftLogoList-{{ section.id }} {
+    --logo-height: {{ section.settings.logo_height }}px;
+    --marquee-speed: {{ section.settings.marquee_speed }}s;
+  }
+{%- endstyle -%}
+
+{%- assign is_full = section.settings.full_width -%}
+
+<section id="DriftLogoList-{{ section.id }}" class="drift-logo-list {% if is_full %}drift-logo-list--full{% endif %}">
+
+  {%- if is_full -%}
+    {%- comment -%} Full width: heading contained, track edge-to-edge {%- endcomment -%}
+    {%- if section.settings.heading != blank -%}
+      <span class="drift-logo-list__container">
+        <h2 class="drift-logo-list__heading">{{ section.settings.heading }}</h2>
+      </span>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <span class="drift-logo-list__track-wrap">
+        <span class="drift-logo-list__track {% if section.settings.grayscale %}is-grayscale{% endif %}">
+          {%- for copy in (1..4) -%}
+            {%- for block in section.blocks -%}
+              {%- if block.settings.logo != blank -%}
+                <span class="drift-logo-list__item" {% if copy == 1 %}{{ block.shopify_attributes }}{% endif %} {% if copy > 1 %}aria-hidden="true"{% endif %}>
+                  <img
+                    src="{{ block.settings.logo | image_url: height: 120 }}"
+                    srcset="{{ block.settings.logo | image_url: height: 120 }} 1x, {{ block.settings.logo | image_url: height: 240 }} 2x"
+                    alt="{% if copy == 1 %}{{ block.settings.logo.alt | default: block.settings.label | default: 'Logo' }}{% endif %}"
+                    width="{{ block.settings.logo.width }}"
+                    height="{{ block.settings.logo.height }}"
+                    loading="lazy"
+                    class="drift-logo-list__img"
+                  >
+                  {%- if block.settings.label != blank -%}
+                    <span class="drift-logo-list__label">{{ block.settings.label }}</span>
+                  {%- endif -%}
+                </span>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+        </span>
+      </span>
+    {%- else -%}
+      <p style="color: var(--drift-text-muted); font-size: var(--drift-text-sm); text-align: center; padding: var(--drift-space-4) 0;">Add logo blocks in the theme editor</p>
+    {%- endif -%}
+
+  {%- else -%}
+    {%- comment -%} Contained: everything inside glass card at content-max {%- endcomment -%}
+    <span class="drift-logo-list__container">
+      <span class="drift-glass drift-logo-list__card">
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="drift-logo-list__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <span class="drift-logo-list__track-wrap">
+            <span class="drift-logo-list__track {% if section.settings.grayscale %}is-grayscale{% endif %}">
+              {%- for copy in (1..4) -%}
+                {%- for block in section.blocks -%}
+                  {%- if block.settings.logo != blank -%}
+                    <span class="drift-logo-list__item" {% if copy == 1 %}{{ block.shopify_attributes }}{% endif %} {% if copy > 1 %}aria-hidden="true"{% endif %}>
+                      <img
+                        src="{{ block.settings.logo | image_url: height: 120 }}"
+                        srcset="{{ block.settings.logo | image_url: height: 120 }} 1x, {{ block.settings.logo | image_url: height: 240 }} 2x"
+                        alt="{% if copy == 1 %}{{ block.settings.logo.alt | default: block.settings.label | default: 'Logo' }}{% endif %}"
+                        width="{{ block.settings.logo.width }}"
+                        height="{{ block.settings.logo.height }}"
+                        loading="lazy"
+                        class="drift-logo-list__img"
+                      >
+                      {%- if block.settings.label != blank -%}
+                        <span class="drift-logo-list__label">{{ block.settings.label }}</span>
+                      {%- endif -%}
+                    </span>
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endfor -%}
+            </span>
+          </span>
+        {%- else -%}
+          <p style="color: var(--drift-text-muted); font-size: var(--drift-text-sm); text-align: center; padding: var(--drift-space-4) 0;">Add logo blocks in the theme editor</p>
+        {%- endif -%}
+
+      </span>
+    </span>
+  {%- endif -%}
+
+</section>
+
+{% schema %}
+{
+  "name": "Logo List",
+  "tag": "section",
+  "class": "drift-section",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "As Seen In"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width (edge to edge)",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo height (px)",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "grayscale",
+      "label": "Grayscale logos",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "marquee_speed",
+      "label": "Scroll speed (seconds per cycle)",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "default": 30,
+      "unit": "s"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Logo image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label (optional)",
+          "info": "Shown below the logo"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Logo List",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,79 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Product Badge Snippet
+  https://webexp.dev
+
+  Usage: {% render 'drift-badge', product: product %}
+
+  Badge sources (priority order):
+  1. Metafield: product.metafields.custom.badge (text) — full override
+  2. Product tags: badge:new, badge:limited, badge:sold-out, badge:custom-text
+     Tag format: "badge:YOUR TEXT" (case-insensitive prefix match)
+  3. Auto sale badge: SAVE XX% when compare_at_price exists
+     Controlled by settings.sale_badge_enabled (default: true)
+
+  Output: glassmorphic pill(s) positioned absolute top of parent
+  Parent must have position: relative
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign badge_text = ''
+
+  comment
+    Priority 1: Metafield override
+  endcomment
+  if product.metafields.custom.badge != blank
+    assign badge_text = product.metafields.custom.badge
+  else
+    comment
+      Priority 2: Product tags — find first "badge:" prefixed tag
+    endcomment
+    for tag in product.tags
+      assign tag_lower = tag | downcase
+      if tag_lower contains 'badge:'
+        assign badge_text = tag | split: ':' | last | strip
+        break
+      endif
+    endfor
+  endif
+
+  comment
+    Sale badge — auto-calculate SAVE percentage
+  endcomment
+  assign sale_badge_text = ''
+  assign sale_badge_enabled = settings.sale_badge_enabled | default: true
+  if sale_badge_enabled and product.compare_at_price_max > product.price_min
+    assign save_amount = product.compare_at_price_max | minus: product.price_min
+    assign save_pct = save_amount | times: 100 | divided_by: product.compare_at_price_max
+    if save_pct > 0
+      assign sale_badge_text = 'products.product.sale_badge' | t: percent: save_pct
+    endif
+  endif
+-%}
+
+{%- comment -%}
+  Sold-out products show no badges — the "Sold Out" label is already
+  on the ATC button / overlay, and a "SAVE %" badge on a sold-out item
+  is misleading (the discount isn't available to act on).
+
+  Nested if (Liquid doesn't support parens in boolean expressions —
+  `a and (b or c)` causes "Expected dotdot but found comparison").
+{%- endcomment -%}
+{%- if product.available -%}
+  {%- if badge_text != blank or sale_badge_text != blank -%}
+    <span class="drift-badge-stack">
+      {%- if badge_text != blank -%}
+        <span class="drift-badge" aria-label="Badge: {{ badge_text | escape }}">
+          {{ badge_text | escape }}
+        </span>
+      {%- endif -%}
+      {%- if sale_badge_text != blank -%}
+        <span class="drift-badge drift-badge--sale" aria-label="{{ sale_badge_text }}">
+          {{ sale_badge_text }}
+        </span>
+      {%- endif -%}
+    </span>
+  {%- endif -%}
+{%- endif -%}

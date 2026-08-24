@@ -1,0 +1,207 @@
+{% comment %}
+
+ .--..--..--..--..--..--..--..--..--..--..--..--..--..--..--. 
+/ .. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \
+\ \/\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ \/ /
+ \/ /`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'\/ / 
+ / /\                                                    / /\ 
+/ /\ \     ________________________________________     / /\ \
+\ \/ /     ___  __ \__  __ \___  _/__  ____/__  __/     \ \/ /
+ \/ /      __  / / /_  /_/ /__  / __  /_   __  /         \/ / 
+ / /\      _  /_/ /_  _, _/__/ /  _  __/   _  /          / /\ 
+/ /\ \     /_____/ /_/ |_| /___/  /_/      /_/          / /\ \
+\ \/ /                                                  \ \/ /
+ \/ /        >> B Y   W E B E X P ,  L L C >>            \/ / 
+ / /\.--..--..--..--..--..--..--..--..--..--..--..--..--./ /\ 
+/ /\ \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \.. \/\ \
+\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `' /
+ `--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--' 
+
+Theme Name: "DRIFT"
+Theme Author: "WEBEXP, LLC"
+Theme Version: "3.0.0"
+Theme Support: "https://www.webexp.dev/"
+
+By using this theme developed and designed by the WEBEXP team,
+you agree to our digital product license terms.
+(https://webexp.dev/pages/license)
+
+Unauthorized redistribution or resale of this theme is strictly
+prohibited. Violating these terms will result in a permanent ban
+from all future WEBEXP products and services.
+www.webexp.dev
+
+{% endcomment %}
+
+<!doctype html>
+<html class="js" lang="{{ request.locale.iso_code }}" data-drift-mode="{{ settings.drift_default_mode }}">
+
+  <script>
+    (function() {
+      try {
+        var s = localStorage.getItem('drift-mode');
+        if (s === 'dark' || s === 'light') {
+          document.documentElement.setAttribute('data-drift-mode', s);
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="">
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    {%- comment -%}
+      BUG-009f: Shopify's accelerated-checkout web component attaches a
+      CLOSED shadow root, which blocks our style injection from outside.
+      Override attachShadow BEFORE any Shopify script runs so every
+      subsequent closed shadow root is silently flipped to open mode.
+      Then drift-cart.js's patchWalletShadowDom() can actually inject the
+      flex-direction override that fixes the mobile cart drawer button
+      stacking.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        var orig = Element.prototype.attachShadow;
+        if (!orig) return;
+        Element.prototype.attachShadow = function (init) {
+          var opts = init ? Object.assign({}, init) : {};
+          if (opts.mode === 'closed') opts.mode = 'open';
+          return orig.call(this, opts);
+        };
+      })();
+    </script>
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- else -%}
+      <link rel="icon" type="image/png" href="https://cdn.shopify.com/s/files/1/0707/3821/5234/files/webexp_logo_final_gray.png?v=1743624484">
+    {%- endif -%}
+
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+
+    {% if page_description %}
+      <meta name="description" content="{{ page_description | escape }}">
+    {% endif %}
+
+    {% render 'meta-tags' %}
+
+    <script src="{{ 'constants.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'pubsub.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'search-form.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'drift-core.js' | asset_url }}" defer></script>
+    <script src="{{ 'drift-email-popup.js' | asset_url }}" defer="defer"></script>
+
+    {{ 'drift-core.css' | asset_url | stylesheet_tag }}
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+
+    {{ content_for_header }}
+
+    {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
+      {{ 'component-localization-form.css' | asset_url | stylesheet_tag: preload: true }}
+      <script src="{{ 'localization-form.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+
+    {%- if settings.predictive_search_enabled -%}
+      <link
+        rel="stylesheet"
+        href="{{ 'component-predictive-search.css' | asset_url }}"
+        media="print"
+        onload="this.media='all'"
+      >
+    {%- endif -%}
+
+    <script>
+      if (Shopify.designMode) {
+        document.documentElement.classList.add('shopify-design-mode');
+      }
+    </script>
+
+
+  </head>
+
+  <body>
+    {% render 'country-redirect' %}
+    <a class="skip-to-content-link button visually-hidden" href="#MainContent">
+      {{ 'accessibility.skip_to_text' | t }}
+    </a>
+
+    {% render 'drift-background' %}
+    {% render 'drift-cart-drawer' %}
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    <ul hidden>
+      <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
+      <li id="a11y-new-window-message">{{ 'accessibility.link_messages.new_window' | t }}</li>
+    </ul>
+
+    <script>
+      window.shopUrl = '{{ request.origin }}';
+      window.routes = {
+        cart_add_url: '{{ routes.cart_add_url }}',
+        cart_change_url: '{{ routes.cart_change_url }}',
+        cart_update_url: '{{ routes.cart_update_url }}',
+        cart_url: '{{ routes.cart_url }}',
+        predictive_search_url: '{{ routes.predictive_search_url }}',
+      };
+
+      window.cartStrings = {
+        error: `{{ 'sections.cart.cart_error' | t }}`,
+        quantityError: `{{ 'sections.cart.cart_quantity_error_html' | t: quantity: '[quantity]' }}`,
+      };
+
+      window.variantStrings = {
+        addToCart: `{{ 'products.product.add_to_cart' | t }}`,
+        soldOut: `{{ 'products.product.sold_out' | t }}`,
+        unavailable: `{{ 'products.product.unavailable' | t }}`,
+        unavailable_with_option: `{{ 'products.product.value_unavailable' | t: option_value: '[value]' }}`,
+      };
+
+      window.accessibilityStrings = {
+        imageAvailable: `{{ 'products.product.media.image_available' | t: index: '[index]' }}`,
+        shareSuccess: `{{ 'general.share.success_message' | t }}`,
+        pauseSlideshow: `{{ 'sections.slideshow.pause_slideshow' | t }}`,
+        playSlideshow: `{{ 'sections.slideshow.play_slideshow' | t }}`,
+        recipientFormExpanded: `{{ 'recipient.form.expanded' | t }}`,
+        recipientFormCollapsed: `{{ 'recipient.form.collapsed' | t }}`,
+        countrySelectorSearchCount: `{{ 'localization.country_results_count' | t: count: '[count]' }}`,
+      };
+    </script>
+
+    {%- if settings.predictive_search_enabled -%}
+      <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+
+    <script src="{{ 'drift-cart.js' | asset_url }}" defer></script>
+
+    {%- comment -%} Google model-viewer web component — required for 3D models on PDP {%- endcomment -%}
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/model-viewer": "https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import '@google/model-viewer';
+    </script>
+  </body>
+</html>

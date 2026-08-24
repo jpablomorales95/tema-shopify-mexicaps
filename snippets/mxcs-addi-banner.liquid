@@ -1,0 +1,226 @@
+{% comment %}
+  ============================================
+  MEXICAPS — Addi Cuotas Banner
+  Snippet: snippets/mxcs-addi-banner.liquid
+
+  USO: Agregar en drift-product-stack.liquid
+  justo después del título del producto (línea ~254):
+  
+    <h1 class="drift-pdp__title">{{ product.title | escape }}</h1>
+    {% render 'mxcs-addi-banner', product: product, variant: current_variant %}
+
+  Muestra precio dividido en 6 cuotas usando el precio
+  con descuento (compare_at_price) si existe, o el precio normal.
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign cuotas = 6
+  assign precio_base = variant.price | default: product.price
+  assign precio_pesos = precio_base | divided_by: 100
+  assign cuota_valor   = precio_pesos | divided_by: cuotas
+-%}
+
+<div class="mxcs-addi" data-addi-banner role="button" tabindex="0" onclick="mxcsAddiCheckout()" style="cursor:pointer;" title="Pagar con Addi en cuotas">
+  <div class="mxcs-addi__logo-wrap">
+    <svg viewBox="0 0 120 52" fill="none" xmlns="http://www.w3.org/2000/svg" class="mxcs-addi__svg" aria-label="Addi">
+      <rect width="120" height="52" rx="16" fill="#1A6BFF"/>
+      <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="28" font-weight="800" fill="white">Addi</text>
+    </svg>
+  </div>
+  <div class="mxcs-addi__text">
+    <span class="mxcs-addi__label">Llévalo hasta en</span>
+    <span class="mxcs-addi__cuotas">
+      <strong>{{ cuotas }} cuotas</strong>
+      <span class="mxcs-addi__valor" data-addi-cuota>
+        de {{ cuota_valor | money_without_trailing_zeros }}
+      </span>
+    </span>
+  </div>
+</div>
+
+<style>
+  .mxcs-addi {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(26, 107, 255, 0.08);
+    border: 1px solid rgba(26, 107, 255, 0.20);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 10px 0 4px;
+    max-width: 100%;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    user-select: none;
+  }
+
+  .mxcs-addi:hover {
+    background: rgba(26, 107, 255, 0.14);
+    border-color: rgba(26, 107, 255, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .mxcs-addi:active {
+    transform: translateY(0);
+  }
+
+  .mxcs-addi__loading {
+    font-size: 11px;
+    color: #1A6BFF;
+    font-family: var(--drift-font-body);
+    margin-left: auto;
+    animation: mxcs-addi-blink 0.8s ease-in-out infinite;
+  }
+
+  @keyframes mxcs-addi-blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  .mxcs-addi__logo-wrap {
+    flex-shrink: 0;
+  }
+
+  .mxcs-addi__svg {
+    width: 52px;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .mxcs-addi__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mxcs-addi__label {
+    font-family: var(--drift-font-body);
+    font-size: 11px;
+    color: rgba(var(--drift-color-text-rgb, 0,0,0), 0.5);
+    letter-spacing: 0.3px;
+    line-height: 1;
+  }
+
+  .mxcs-addi__cuotas {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: var(--drift-font-body);
+    font-size: 14px;
+    color: var(--drift-color-text);
+    line-height: 1.2;
+  }
+
+  .mxcs-addi__cuotas strong {
+    font-weight: 700;
+    color: #1A6BFF;
+  }
+
+  .mxcs-addi__valor {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--drift-color-text);
+    opacity: 0.75;
+  }
+
+  /* Dark mode ajuste */
+  @media (prefers-color-scheme: dark) {
+    .mxcs-addi {
+      background: rgba(26, 107, 255, 0.12);
+      border-color: rgba(26, 107, 255, 0.25);
+    }
+  }
+</style>
+
+<script>
+  (function(){
+    var cuotas = {{ cuotas }};
+
+    function getVariantId(){
+      var form = document.querySelector('[data-pdp-form]');
+      var input = form ? form.querySelector('[data-pdp-variant-id]') : null;
+      return input ? parseInt(input.value) : null;
+    }
+
+    function updateAddi(){
+      var cuotaEl = document.querySelector('[data-addi-cuota]');
+      if(!cuotaEl) return;
+
+      var variantId = getVariantId();
+      if(!variantId) return;
+
+      var scriptEl = document.getElementById('drift-pdp-variants');
+      if(!scriptEl) return;
+
+      try {
+        var variants = JSON.parse(scriptEl.textContent);
+        var variant = variants.find(function(v){ return v.id === variantId; });
+        if(!variant) return;
+
+        var precio = variant.price / 100;
+        var cuota = Math.ceil(precio / cuotas);
+        var formatted = '$' + Math.round(cuota).toLocaleString('es-CO');
+        cuotaEl.textContent = 'de ' + formatted;
+      } catch(e) {}
+    }
+
+    window.mxcsAddiCheckout = function(){
+      var banner = document.querySelector('[data-addi-banner]');
+      var variantId = getVariantId();
+
+      if(!variantId){
+        // Si no hay variante seleccionada, abrir el selector de opciones
+        var selectBtn = document.querySelector('[data-pdp-select-options]');
+        if(selectBtn) selectBtn.click();
+        return;
+      }
+
+      // Mostrar loading en el banner
+      if(banner){
+        var existing = banner.querySelector('.mxcs-addi__loading');
+        if(!existing){
+          var loader = document.createElement('span');
+          loader.className = 'mxcs-addi__loading';
+          loader.textContent = 'Procesando...';
+          banner.appendChild(loader);
+        }
+        banner.style.pointerEvents = 'none';
+        banner.style.opacity = '0.7';
+      }
+
+      // Agregar al carrito y redirigir a checkout
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: variantId, quantity: 1 })
+      })
+      .then(function(res){ return res.json(); })
+      .then(function(){
+        window.location.href = '/checkout';
+      })
+      .catch(function(){
+        // Si falla, fallback al checkout normal del form
+        if(banner){
+          banner.style.pointerEvents = '';
+          banner.style.opacity = '';
+          var loader = banner.querySelector('.mxcs-addi__loading');
+          if(loader) loader.remove();
+        }
+        window.location.href = '/checkout';
+      });
+    };
+
+    // Escuchar cambios de variante
+    document.addEventListener('drift:variant:change', updateAddi);
+    document.addEventListener('change', function(e){
+      if(e.target && e.target.closest('[data-pdp-form]')){
+        setTimeout(updateAddi, 100);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', updateAddi);
+    setTimeout(updateAddi, 500);
+  })();
+</script>

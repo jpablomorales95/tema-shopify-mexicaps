@@ -1,0 +1,144 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  FAQ Accordion Section
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-faq" data-drift-faq>
+  <span class="drift-faq__container">
+
+    {%- if section.settings.heading != blank -%}
+      <h2 class="drift-faq__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if section.settings.subtext != blank -%}
+      <p class="drift-faq__subtext">{{ section.settings.subtext }}</p>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <span class="drift-faq__list">
+        {%- for block in section.blocks -%}
+          <span class="drift-faq__item" data-faq-item {{ block.shopify_attributes }}>
+            <button
+              class="drift-faq__question"
+              data-faq-toggle
+              type="button"
+              aria-expanded="false"
+              aria-controls="drift-faq-answer-{{ block.id }}"
+            >
+              <span class="drift-faq__question-text">{{ block.settings.question }}</span>
+              <svg class="drift-faq__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+            <span
+              class="drift-faq__answer"
+              id="drift-faq-answer-{{ block.id }}"
+              data-faq-answer
+              role="region"
+            >
+              <span class="drift-faq__answer-inner">
+                {{ block.settings.answer }}
+              </span>
+            </span>
+          </span>
+        {%- endfor -%}
+      </span>
+    {%- endif -%}
+
+  </span>
+</section>
+
+<script>
+  (function () {
+    var section = document.querySelector('[data-drift-faq]');
+    if (!section) return;
+
+    section.addEventListener('click', function (e) {
+      var toggle = e.target.closest('[data-faq-toggle]');
+      if (!toggle) return;
+
+      var item = toggle.closest('[data-faq-item]');
+      var answer = item.querySelector('[data-faq-answer]');
+      var isOpen = item.classList.contains('is-open');
+
+      /* Close all others if single-open mode */
+      var allItems = section.querySelectorAll('[data-faq-item]');
+      allItems.forEach(function (el) {
+        if (el !== item && el.classList.contains('is-open')) {
+          el.classList.remove('is-open');
+          el.querySelector('[data-faq-toggle]').setAttribute('aria-expanded', 'false');
+          var a = el.querySelector('[data-faq-answer]');
+          a.style.maxHeight = null;
+        }
+      });
+
+      /* Toggle current */
+      if (isOpen) {
+        item.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        answer.style.maxHeight = null;
+      } else {
+        item.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "FAQ Accordion",
+  "class": "drift-section-faq",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Frequently Asked Questions"
+    },
+    {
+      "type": "textarea",
+      "id": "subtext",
+      "label": "Subtext"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "What is your return policy?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>We accept returns within 14 days of purchase. Items must be unworn and in original packaging.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ Accordion",
+      "blocks": [
+        { "type": "faq" },
+        { "type": "faq" },
+        { "type": "faq" }
+      ]
+    }
+  ]
+}
+{% endschema %}

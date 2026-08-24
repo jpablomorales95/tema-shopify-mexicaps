@@ -1,0 +1,129 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Image with Text Section
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+<section class="drift-img-text" data-drift-img-text>
+  <span class="drift-img-text__container">
+    <span class="drift-img-text__card drift-glass{% if section.settings.layout == 'image_right' %} drift-img-text__card--flipped{% endif %}">
+
+      {%- comment -%} Image side {%- endcomment -%}
+      <span class="drift-img-text__media">
+        {%- if section.settings.image != blank -%}
+          <img
+            class="drift-img-text__img"
+            src="{{ section.settings.image | image_url: width: 1200 }}"
+            srcset="
+              {{ section.settings.image | image_url: width: 600 }} 600w,
+              {{ section.settings.image | image_url: width: 900 }} 900w,
+              {{ section.settings.image | image_url: width: 1200 }} 1200w
+            "
+            sizes="(max-width: 1023px) 100vw, 50vw"
+            alt="{{ section.settings.image.alt | escape }}"
+            loading="lazy"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+          >
+        {%- else -%}
+          <span class="drift-img-text__placeholder">
+            {{ 'image' | placeholder_svg_tag }}
+          </span>
+        {%- endif -%}
+      </span>
+
+      {%- comment -%} Text side {%- endcomment -%}
+      <span class="drift-img-text__content">
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="drift-img-text__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.body != blank -%}
+          <span class="drift-img-text__body rte">{{ section.settings.body }}</span>
+        {%- endif -%}
+
+        {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+          <a
+            href="{{ section.settings.button_link }}"
+            class="drift-btn drift-btn--primary drift-img-text__btn"
+          >
+            {{ section.settings.button_label }}
+          </a>
+        {%- endif -%}
+
+      </span>
+
+    </span>
+  </span>
+</section>
+
+{% schema %}
+{
+  "name": "Image with Text",
+  "class": "drift-section-img-text",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Image position",
+      "options": [
+        { "value": "image_left", "label": "Image left" },
+        { "value": "image_right", "label": "Image right" }
+      ],
+      "default": "image_left"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Our Story"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body text",
+      "default": "<p>Share your brand story, values, or anything that connects with your audience.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image with Text"
+    }
+  ]
+}
+{% endschema %}

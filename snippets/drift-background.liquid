@@ -1,0 +1,145 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Global Background — Image / Video
+  V3: Blur, invert, auto overlay
+  Included in theme.liquid after <body>
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- if settings.drift_bg_enabled -%}
+  {%- liquid
+    assign has_image = false
+    assign has_image_dark = false
+    assign has_video = false
+
+    if settings.drift_bg_image != blank
+      assign has_image = true
+    endif
+    if settings.drift_bg_image_dark != blank
+      assign has_image_dark = true
+    endif
+    if settings.drift_bg_video != blank
+      assign has_video = true
+    endif
+
+    assign blur = settings.drift_bg_blur | default: 0
+    assign invert = settings.drift_bg_invert
+    assign auto_overlay = settings.drift_bg_auto_overlay
+    assign overlay_opacity = settings.drift_bg_overlay_opacity | default: 10
+  -%}
+
+  {%- if has_image or has_image_dark or has_video -%}
+
+    {%- comment -%} Determine poster image for video — use matching mode image as instant frame {%- endcomment -%}
+    {%- liquid
+      assign poster_url = ''
+      if has_video
+        if has_image_dark and has_image
+          assign poster_url = settings.drift_bg_image | image_url: width: 1920
+        elsif has_image_dark
+          assign poster_url = settings.drift_bg_image_dark | image_url: width: 1920
+        elsif has_image
+          assign poster_url = settings.drift_bg_image | image_url: width: 1920
+        endif
+      endif
+    -%}
+
+    <span
+      class="drift-bg{% if invert %} drift-bg--invert{% endif %}"
+      aria-hidden="true"
+      {% if blur > 0 %}style="--drift-bg-blur: {{ blur }}px;"{% endif %}
+    >
+
+      {%- comment -%} Media layer — gets blur + invert filters {%- endcomment -%}
+      <span class="drift-bg__media">
+
+        {%- comment -%} Video background {%- endcomment -%}
+        {%- if has_video -%}
+          <video
+            class="drift-bg__video"
+            autoplay
+            muted
+            loop
+            playsinline
+            disablepictureinpicture
+            preload="auto"
+            {% if poster_url != blank %}poster="{{ poster_url }}"{% endif %}
+          >
+            <source src="{{ settings.drift_bg_video }}" type="video/mp4">
+          </video>
+          <script>
+            (function(){
+              var v = document.querySelector('.drift-bg__video');
+              if (!v) return;
+              var key = 'drift-bg-time';
+
+              /* Resume from saved position */
+              try {
+                var saved = sessionStorage.getItem(key);
+                if (saved) v.currentTime = parseFloat(saved);
+              } catch(e) {}
+
+              /* Fade in once ready */
+              if (v.readyState >= 2) return;
+              v.style.opacity = '0';
+              v.addEventListener('loadeddata', function() {
+                v.style.transition = 'opacity 0.4s ease';
+                v.style.opacity = '1';
+              }, { once: true });
+
+              /* Save position before leaving page */
+              window.addEventListener('beforeunload', function() {
+                try { sessionStorage.setItem(key, v.currentTime); } catch(e) {}
+              });
+            })();
+          </script>
+        {%- endif -%}
+
+        {%- comment -%} Image — primary (or light mode) {%- endcomment -%}
+        {%- if has_image -%}
+          <img
+            class="drift-bg__img{% if has_image_dark %} drift-bg__img--light{% endif %}"
+            src="{{ settings.drift_bg_image | image_url: width: 1920 }}"
+            srcset="
+              {{ settings.drift_bg_image | image_url: width: 1024 }} 1024w,
+              {{ settings.drift_bg_image | image_url: width: 1440 }} 1440w,
+              {{ settings.drift_bg_image | image_url: width: 1920 }} 1920w
+            "
+            sizes="100vw"
+            alt=""
+            loading="eager"
+            fetchpriority="low"
+            draggable="false"
+          >
+        {%- endif -%}
+
+        {%- comment -%} Image — dark mode override {%- endcomment -%}
+        {%- if has_image_dark -%}
+          <img
+            class="drift-bg__img drift-bg__img--dark"
+            src="{{ settings.drift_bg_image_dark | image_url: width: 1920 }}"
+            srcset="
+              {{ settings.drift_bg_image_dark | image_url: width: 1024 }} 1024w,
+              {{ settings.drift_bg_image_dark | image_url: width: 1440 }} 1440w,
+              {{ settings.drift_bg_image_dark | image_url: width: 1920 }} 1920w
+            "
+            sizes="100vw"
+            alt=""
+            loading="eager"
+            fetchpriority="low"
+            draggable="false"
+          >
+        {%- endif -%}
+
+      </span>
+
+      {%- comment -%} Auto overlay — mode-aware color {%- endcomment -%}
+      {%- if auto_overlay -%}
+        <span class="drift-bg__overlay" style="--drift-bg-overlay-opacity: {{ overlay_opacity | divided_by: 100.0 }};"></span>
+      {%- endif -%}
+
+    </span>
+  {%- endif -%}
+{%- endif -%}

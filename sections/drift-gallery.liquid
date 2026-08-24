@@ -1,0 +1,375 @@
+{% comment %}
+  ============================================
+  DRIFT Theme by WEBEXP, LLC
+  Gallery / Image Grid — Masonry or Uniform
+  V3: Lightbox with keyboard/swipe navigation
+  https://webexp.dev
+  ============================================
+{% endcomment %}
+
+{%- liquid
+  assign layout = section.settings.layout
+  assign cols_mobile = section.settings.columns_mobile
+  assign cols_desktop = section.settings.columns_desktop
+  assign gap = section.settings.gap
+  assign ratio = section.settings.image_ratio
+  assign id = section.id
+-%}
+
+<section
+  class="drift-gallery"
+  data-drift-gallery
+  data-gallery-id="{{ id }}"
+  style="
+    --gallery-cols-mobile: {{ cols_mobile }};
+    --gallery-cols-desktop: {{ cols_desktop }};
+    --gallery-gap: {{ gap }}px;
+  "
+>
+  <span class="drift-gallery__container">
+
+    {%- if section.settings.heading != blank -%}
+      <h2 class="drift-gallery__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if layout == 'masonry' -%}
+      {%- comment -%} Masonry via CSS columns {%- endcomment -%}
+      <span class="drift-gallery__masonry">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.image != blank -%}
+            <span class="drift-gallery__item" {{ block.shopify_attributes }}>
+              <button
+                class="drift-gallery__trigger"
+                data-gallery-trigger="{{ forloop.index0 }}"
+                type="button"
+                aria-label="Open image {{ forloop.index }} in lightbox"
+              >
+                <img
+                  class="drift-gallery__img"
+                  src="{{ block.settings.image | image_url: width: 800 }}"
+                  srcset="
+                    {{ block.settings.image | image_url: width: 400 }} 400w,
+                    {{ block.settings.image | image_url: width: 600 }} 600w,
+                    {{ block.settings.image | image_url: width: 800 }} 800w,
+                    {{ block.settings.image | image_url: width: 1200 }} 1200w
+                  "
+                  sizes="(min-width: 1024px) calc((var(--drift-content-max, 1200px) - {{ cols_desktop | minus: 1 | times: gap }}px) / {{ cols_desktop }}), calc((100vw - 32px - {{ cols_mobile | minus: 1 | times: gap }}px) / {{ cols_mobile }})"
+                  alt="{{ block.settings.image.alt | escape }}"
+                  width="{{ block.settings.image.width }}"
+                  height="{{ block.settings.image.height }}"
+                  loading="lazy"
+                  draggable="false"
+                >
+                {%- if block.settings.caption != blank -%}
+                  <span class="drift-gallery__caption">{{ block.settings.caption }}</span>
+                {%- endif -%}
+              </button>
+            </span>
+          {%- endif -%}
+        {%- endfor -%}
+      </span>
+
+    {%- else -%}
+      {%- comment -%} Uniform grid {%- endcomment -%}
+      <span class="drift-gallery__grid">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.image != blank -%}
+            <span class="drift-gallery__item" {{ block.shopify_attributes }}>
+              <button
+                class="drift-gallery__trigger drift-gallery__trigger--{{ ratio }}"
+                data-gallery-trigger="{{ forloop.index0 }}"
+                type="button"
+                aria-label="Open image {{ forloop.index }} in lightbox"
+              >
+                <img
+                  class="drift-gallery__img drift-gallery__img--cover"
+                  src="{{ block.settings.image | image_url: width: 800 }}"
+                  srcset="
+                    {{ block.settings.image | image_url: width: 400 }} 400w,
+                    {{ block.settings.image | image_url: width: 600 }} 600w,
+                    {{ block.settings.image | image_url: width: 800 }} 800w,
+                    {{ block.settings.image | image_url: width: 1200 }} 1200w
+                  "
+                  sizes="(min-width: 1024px) calc((var(--drift-content-max, 1200px) - {{ cols_desktop | minus: 1 | times: gap }}px) / {{ cols_desktop }}), calc((100vw - 32px - {{ cols_mobile | minus: 1 | times: gap }}px) / {{ cols_mobile }})"
+                  alt="{{ block.settings.image.alt | escape }}"
+                  width="{{ block.settings.image.width }}"
+                  height="{{ block.settings.image.height }}"
+                  loading="lazy"
+                  draggable="false"
+                >
+                {%- if block.settings.caption != blank -%}
+                  <span class="drift-gallery__caption">{{ block.settings.caption }}</span>
+                {%- endif -%}
+              </button>
+            </span>
+          {%- endif -%}
+        {%- endfor -%}
+      </span>
+    {%- endif -%}
+
+  </span>
+
+  {%- comment -%} Lightbox {%- endcomment -%}
+  <span
+    class="drift-gallery__lightbox drift-glass"
+    data-gallery-lightbox
+    aria-hidden="true"
+    role="dialog"
+    aria-label="Image lightbox"
+  >
+    <span class="drift-gallery__lightbox-backdrop" data-gallery-lightbox-close></span>
+
+    <span class="drift-gallery__lightbox-content">
+      <img class="drift-gallery__lightbox-img" data-gallery-lightbox-img src="" alt="">
+
+      {%- comment -%} Caption {%- endcomment -%}
+      <span class="drift-gallery__lightbox-caption" data-gallery-lightbox-caption hidden></span>
+
+      {%- comment -%} Counter {%- endcomment -%}
+      <span class="drift-gallery__lightbox-counter">
+        <span data-gallery-lightbox-current>1</span>
+        <span class="drift-gallery__lightbox-sep"></span>
+        <span data-gallery-lightbox-total>1</span>
+      </span>
+    </span>
+
+    {%- comment -%} Nav arrows {%- endcomment -%}
+    <button class="drift-icon-btn drift-gallery__lightbox-arrow drift-gallery__lightbox-arrow--prev" data-gallery-lightbox-prev type="button" aria-label="Previous image">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="drift-icon-btn drift-gallery__lightbox-arrow drift-gallery__lightbox-arrow--next" data-gallery-lightbox-next type="button" aria-label="Next image">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+    {%- comment -%} Close {%- endcomment -%}
+    <button class="drift-icon-btn drift-gallery__lightbox-close" data-gallery-lightbox-close type="button" aria-label="Close lightbox">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </span>
+</section>
+
+{%- comment -%} Inline JS — section-specific, small enough to not warrant a separate asset {%- endcomment -%}
+<script>
+(function () {
+  'use strict';
+
+  var section = document.querySelector('[data-gallery-id="{{ id }}"]');
+  if (!section) return;
+
+  var lightbox = section.querySelector('[data-gallery-lightbox]');
+  var lbImg = section.querySelector('[data-gallery-lightbox-img]');
+  var lbCaption = section.querySelector('[data-gallery-lightbox-caption]');
+  var lbCurrent = section.querySelector('[data-gallery-lightbox-current]');
+  var lbTotal = section.querySelector('[data-gallery-lightbox-total]');
+  var closeBtns = section.querySelectorAll('[data-gallery-lightbox-close]');
+  var prevBtn = section.querySelector('[data-gallery-lightbox-prev]');
+  var nextBtn = section.querySelector('[data-gallery-lightbox-next]');
+  var triggers = section.querySelectorAll('[data-gallery-trigger]');
+
+  var images = [];
+  var current = 0;
+
+  /* Build image array from triggers */
+  triggers.forEach(function (btn) {
+    var img = btn.querySelector('img');
+    var cap = btn.querySelector('.drift-gallery__caption');
+    if (img) {
+      images.push({
+        /* Use largest srcset for lightbox */
+        src: img.getAttribute('srcset').split(',').pop().trim().split(' ')[0],
+        alt: img.alt || '',
+        caption: cap ? cap.textContent.trim() : ''
+      });
+    }
+  });
+
+  if (!images.length) return;
+
+  function show(index) {
+    current = (index + images.length) % images.length;
+    var data = images[current];
+    lbImg.src = data.src;
+    lbImg.alt = data.alt;
+    lbCurrent.textContent = current + 1;
+    lbTotal.textContent = images.length;
+
+    if (data.caption) {
+      lbCaption.textContent = data.caption;
+      lbCaption.removeAttribute('hidden');
+    } else {
+      lbCaption.setAttribute('hidden', '');
+    }
+
+    /* Hide arrows if only one image */
+    var single = images.length <= 1;
+    prevBtn.style.display = single ? 'none' : '';
+    nextBtn.style.display = single ? 'none' : '';
+  }
+
+  function openLightbox(index) {
+    show(index);
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    lbImg.src = '';
+  }
+
+  /* Trigger clicks */
+  triggers.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var idx = parseInt(btn.getAttribute('data-gallery-trigger'), 10);
+      openLightbox(idx);
+    });
+  });
+
+  /* Close */
+  closeBtns.forEach(function (btn) {
+    btn.addEventListener('click', closeLightbox);
+  });
+
+  /* Nav */
+  prevBtn.addEventListener('click', function () { show(current - 1); });
+  nextBtn.addEventListener('click', function () { show(current + 1); });
+
+  /* Keyboard */
+  document.addEventListener('keydown', function (e) {
+    if (lightbox.getAttribute('aria-hidden') !== 'false') return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') show(current - 1);
+    if (e.key === 'ArrowRight') show(current + 1);
+  });
+
+  /* Touch swipe */
+  var touchStartX = 0;
+  lightbox.addEventListener('touchstart', function (e) {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  lightbox.addEventListener('touchend', function (e) {
+    var diff = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(diff) > 50) {
+      show(diff > 0 ? current - 1 : current + 1);
+    }
+  }, { passive: true });
+
+})();
+</script>
+
+{% schema %}
+{
+  "name": "DRIFT Gallery",
+  "class": "drift-section-gallery",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["password"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout style",
+      "options": [
+        { "value": "masonry", "label": "Masonry" },
+        { "value": "grid", "label": "Uniform grid" }
+      ],
+      "default": "masonry"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio (grid only)",
+      "options": [
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "landscape", "label": "Landscape (4:3)" }
+      ],
+      "default": "square",
+      "info": "Only applies to uniform grid layout. Masonry uses natural image ratios."
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Columns — mobile",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns — desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap between images",
+      "min": 0,
+      "max": 24,
+      "step": 4,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Caption",
+          "info": "Optional text shown below the image and in lightbox."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DRIFT Gallery",
+      "blocks": [
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image" }
+      ]
+    }
+  ]
+}
+{% endschema %}
