@@ -1,0 +1,35 @@
+{
+  "sections": {
+    "drift_product_stack_BMcF9E": {
+      "type": "drift-product-stack",
+      "name": "DRIFT Product Stack",
+      "blocks": {
+        "combo_widget_mixmatch01": {
+          "type": "combo_widget",
+          "settings": {
+            "combo_type": "mix_match",
+            "combo_mode": "standalone",
+            "set_price": 300000,
+            "set_qty": 3,
+            "set_label": "Elige tus 3 gorras",
+            "pool_collection": "gorras",
+            "combo_marker": "mixmatch-corona",
+            "redirect_checkout": true
+          }
+        }
+      },
+      "block_order": ["combo_widget_mixmatch01"],
+      "settings": {
+        "media_nav_style": "thumbnails",
+        "media_ratio": "1-1",
+        "video_playback": "autoplay",
+        "desktop_layout": "center",
+        "media_zoom": "magnifier",
+        "low_stock_enabled": false,
+        "low_stock_threshold": 5,
+        "hide_default_atc": true
+      }
+    }
+  },
+  "order": ["drift_product_stack_BMcF9E"]
+}

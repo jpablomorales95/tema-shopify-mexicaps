@@ -1,0 +1,13 @@
+{
+  "name": "mixmatch-mexicaps",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "shopify": "shopify",
+    "deploy": "shopify app deploy",
+    "dev": "shopify app dev"
+  },
+  "devDependencies": {
+    "@shopify/cli": "^3.79.0"
+  }
+}

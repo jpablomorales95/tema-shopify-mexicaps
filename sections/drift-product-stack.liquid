@@ -33,6 +33,8 @@
   if preorder_text == blank
     assign preorder_text = 'Pre-Order'
   endif
+
+  assign hide_default_atc = section.settings.hide_default_atc
 -%}
 
 {{ 'combo-widgets.css' | asset_url | stylesheet_tag }}
@@ -347,65 +349,67 @@
         </span>
       {%- endif -%}
 
-      {%- unless product.has_only_default_variant -%}
-        <button
-          type="button"
-          class="drift-btn drift-btn--primary drift-pdp__atc drift-pdp__atc--select"
-          data-pdp-select-options
-          {% unless product.available %}disabled{% endunless %}
-        >
-          <span class="drift-pdp__atc-text">{% if product.available %}Select Options{% else %}Sold Out{% endif %}</span>
-          <span class="drift-pdp__atc-price">
-            {%- if product.compare_at_price_max > product.price_min and product.price_varies == false -%}
-              <s class="drift-pdp__compare">{{ product.compare_at_price_max | money_without_trailing_zeros }}</s>
-            {%- endif -%}
-            {%- if product.price_varies -%}
-              From {{ product.price_min | money_without_trailing_zeros }}
-            {%- else -%}
+      {%- unless hide_default_atc -%}
+        {%- unless product.has_only_default_variant -%}
+          <button
+            type="button"
+            class="drift-btn drift-btn--primary drift-pdp__atc drift-pdp__atc--select"
+            data-pdp-select-options
+            {% unless product.available %}disabled{% endunless %}
+          >
+            <span class="drift-pdp__atc-text">{% if product.available %}Select Options{% else %}Sold Out{% endif %}</span>
+            <span class="drift-pdp__atc-price">
+              {%- if product.compare_at_price_max > product.price_min and product.price_varies == false -%}
+                <s class="drift-pdp__compare">{{ product.compare_at_price_max | money_without_trailing_zeros }}</s>
+              {%- endif -%}
+              {%- if product.price_varies -%}
+                From {{ product.price_min | money_without_trailing_zeros }}
+              {%- else -%}
+                {%- assign price_mod = current_variant.price | modulo: 100 -%}
+                {%- if price_mod == 0 -%}
+                  {{ current_variant.price | money_without_trailing_zeros }}
+                {%- else -%}
+                  {{ current_variant.price | money }}
+                {%- endif -%}
+              {%- endif -%}
+            </span>
+          </button>
+        {%- endunless -%}
+
+        <form method="post" action="/cart/add" class="drift-pdp__form" data-pdp-form>
+          <input type="hidden" name="id" value="{{ current_variant.id }}" data-pdp-variant-id>
+          <input type="hidden" name="quantity" value="1">
+          <button
+            type="submit"
+            class="drift-btn drift-btn--primary drift-pdp__atc drift-pdp__atc--submit{% unless product.has_only_default_variant %} drift-pdp__atc--hidden{% endunless %}"
+            {% unless current_variant.available %}disabled{% endunless %}
+            data-pdp-atc
+            data-preorder="{% if is_preorder %}true{% else %}false{% endif %}"
+            data-preorder-text="{{ preorder_text | escape }}"
+          >
+            <span class="drift-pdp__atc-text">
+              {%- if current_variant.available and is_preorder -%}
+                {{ preorder_text }}
+              {%- elsif current_variant.available -%}
+                Add to Cart
+              {%- else -%}
+                Sold Out
+              {%- endif -%}
+            </span>
+            <span class="drift-pdp__atc-price" data-pdp-price>
+              {%- if current_variant.compare_at_price > current_variant.price -%}
+                <s class="drift-pdp__compare">{{ current_variant.compare_at_price | money_without_trailing_zeros }}</s>
+              {%- endif -%}
               {%- assign price_mod = current_variant.price | modulo: 100 -%}
               {%- if price_mod == 0 -%}
                 {{ current_variant.price | money_without_trailing_zeros }}
               {%- else -%}
                 {{ current_variant.price | money }}
               {%- endif -%}
-            {%- endif -%}
-          </span>
-        </button>
+            </span>
+          </button>
+        </form>
       {%- endunless -%}
-
-      <form method="post" action="/cart/add" class="drift-pdp__form" data-pdp-form>
-        <input type="hidden" name="id" value="{{ current_variant.id }}" data-pdp-variant-id>
-        <input type="hidden" name="quantity" value="1">
-        <button
-          type="submit"
-          class="drift-btn drift-btn--primary drift-pdp__atc drift-pdp__atc--submit{% unless product.has_only_default_variant %} drift-pdp__atc--hidden{% endunless %}"
-          {% unless current_variant.available %}disabled{% endunless %}
-          data-pdp-atc
-          data-preorder="{% if is_preorder %}true{% else %}false{% endif %}"
-          data-preorder-text="{{ preorder_text | escape }}"
-        >
-          <span class="drift-pdp__atc-text">
-            {%- if current_variant.available and is_preorder -%}
-              {{ preorder_text }}
-            {%- elsif current_variant.available -%}
-              Add to Cart
-            {%- else -%}
-              Sold Out
-            {%- endif -%}
-          </span>
-          <span class="drift-pdp__atc-price" data-pdp-price>
-            {%- if current_variant.compare_at_price > current_variant.price -%}
-              <s class="drift-pdp__compare">{{ current_variant.compare_at_price | money_without_trailing_zeros }}</s>
-            {%- endif -%}
-            {%- assign price_mod = current_variant.price | modulo: 100 -%}
-            {%- if price_mod == 0 -%}
-              {{ current_variant.price | money_without_trailing_zeros }}
-            {%- else -%}
-              {{ current_variant.price | money }}
-            {%- endif -%}
-          </span>
-        </button>
-      </form>
 
       {%- comment -%} Combo widgets — configurables como bloque de sección en el editor de temas {%- endcomment -%}
       {%- for block in section.blocks -%}
@@ -417,7 +421,11 @@
                   product: product,
                   set_price: block.settings.set_price,
                   set_qty: block.settings.set_qty,
-                  set_label: block.settings.set_label
+                  set_label: block.settings.set_label,
+                  mode: block.settings.combo_mode,
+                  pool_collection: block.settings.pool_collection,
+                  combo_marker: block.settings.combo_marker,
+                  redirect_checkout: block.settings.redirect_checkout
                 %}
             {%- endcase -%}
           </div>
@@ -592,6 +600,17 @@
       "step": 1,
       "default": 5,
       "info": "Show indicator when variant inventory is at or below this number."
+    },
+    {
+      "type": "header",
+      "content": "Producto ancla de combo"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_default_atc",
+      "label": "Ocultar botón normal de Agregar al carrito",
+      "default": false,
+      "info": "Actívalo en productos ancla de combo (ej. Mix & Match) donde el único camino de compra debe ser el selector del combo, nunca el botón estándar."
     }
   ],
   "blocks": [
@@ -610,6 +629,17 @@
           "info": "Quantity Breaks, Volume Discount y Complete the Bundle se agregan a esta lista cuando estén listos."
         },
         {
+          "type": "select",
+          "id": "combo_mode",
+          "label": "Modo",
+          "options": [
+            { "value": "embedded", "label": "Embebido (este producto cuenta como 1 pieza del set)" },
+            { "value": "standalone", "label": "Standalone (producto ancla dedicado, no se vende solo)" }
+          ],
+          "default": "embedded",
+          "info": "Standalone: usa esto junto con 'Ocultar botón normal de Agregar al carrito' arriba, y con la plantilla product.mix-and-match."
+        },
+        {
           "type": "number",
           "id": "set_price",
           "label": "Precio fijo del combo",
@@ -620,13 +650,32 @@
           "id": "set_qty",
           "label": "Piezas totales del set",
           "default": 3,
-          "info": "Incluye el producto ancla. Ej: 3 = este producto + 2 más."
+          "info": "En modo embebido incluye el producto ancla (ej. 3 = este producto + 2 más). En modo standalone son las piezas totales a elegir (ej. 3 = 3 gorras)."
         },
         {
           "type": "text",
           "id": "set_label",
           "label": "Título del bloque",
           "default": "Arma tu combo"
+        },
+        {
+          "type": "collection",
+          "id": "pool_collection",
+          "label": "Colección de productos elegibles (solo standalone)",
+          "info": "Restringe el selector a esta colección. Si se deja vacío, se busca en todo el catálogo."
+        },
+        {
+          "type": "text",
+          "id": "combo_marker",
+          "label": "Marca del combo (line item property _combo, solo standalone)",
+          "default": "mixmatch-corona",
+          "info": "Identifica los line items de este combo para que la Discount Function los detecte. Debe coincidir con el valor configurado en la función."
+        },
+        {
+          "type": "checkbox",
+          "id": "redirect_checkout",
+          "label": "Redirigir directo a checkout al completar (solo standalone)",
+          "default": true
         }
       ]
     }

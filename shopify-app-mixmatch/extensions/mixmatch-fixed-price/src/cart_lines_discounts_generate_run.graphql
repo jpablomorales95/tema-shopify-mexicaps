@@ -1,0 +1,22 @@
+query CartLinesDiscountsGenerateRunInput {
+  cart {
+    lines {
+      id
+      quantity
+      cost {
+        subtotalAmount {
+          amount
+        }
+      }
+      comboMarker: attribute(key: "_combo") {
+        value
+      }
+      comboId: attribute(key: "_combo_id") {
+        value
+      }
+    }
+  }
+  discount {
+    discountClasses
+  }
+}

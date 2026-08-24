@@ -1,0 +1,18 @@
+## Configuración de la app custom "Mix & Match Mexicaps"
+## Esta app privada existe únicamente para alojar la Discount Function
+## que fija el precio del combo Triple Corona en $300.000 COP.
+##
+## client_id se rellena automáticamente la primera vez que corres
+## `shopify app deploy` (o `shopify app config link`) y eliges/creas la app
+## en el Partner Dashboard. No lo edites a mano.
+
+name = "mixmatch-mexicaps"
+client_id = ""
+application_url = "https://example.com"
+embedded = false
+
+[access_scopes]
+scopes = ""
+
+[build]
+automatically_update_urls_on_dev = true

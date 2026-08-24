@@ -10,10 +10,18 @@
     var setQty = parseInt(widget.getAttribute('data-combo-set-qty'), 10) || 3;
     var anchorVariantId = widget.getAttribute('data-combo-anchor-id');
     var anchorPrice = parseFloat(widget.getAttribute('data-combo-anchor-price')) || 0;
+    var isStandalone = widget.getAttribute('data-combo-mode') === 'standalone';
+    var comboMarker = widget.getAttribute('data-combo-marker') || '';
+    var redirectToCheckout = widget.getAttribute('data-combo-redirect-checkout') === 'true';
 
     var root = widget.closest('[data-section-id]') || document;
     var picker = root.querySelector('[data-combo-picker]');
     var variantModal = root.querySelector('[data-combo-variant]');
+    var poolScript = root.querySelector('[data-combo-pool]');
+    var pool = null;
+    if (poolScript) {
+      try { pool = JSON.parse(poolScript.textContent); } catch (e) { pool = []; }
+    }
     var slotsWrap = widget.querySelector('[data-combo-slots]');
     var progressFill = widget.querySelector('[data-combo-progress-fill]');
     var progressCount = widget.querySelector('[data-combo-progress-count]');
@@ -45,7 +53,7 @@
     }
 
     function updateProgress() {
-      var filled = Object.keys(selections).length + 1; // +1 por el ancla
+      var filled = Object.keys(selections).length + (isStandalone ? 0 : 1); // +1 por el ancla, salvo standalone
       var pct = Math.round((filled / setQty) * 100);
       if (progressFill) progressFill.style.width = pct + '%';
       if (progressCount) progressCount.textContent = filled;
@@ -54,7 +62,7 @@
       submitBtn.disabled = !allFilled;
 
       if (allFilled) {
-        var normalTotalCents = Math.round(anchorPrice) + Object.keys(selections)
+        var normalTotalCents = (isStandalone ? 0 : Math.round(anchorPrice)) + Object.keys(selections)
           .reduce(function (sum, k) { return sum + Math.round(selections[k].price); }, 0);
         pricingBlock.hidden = false;
         priceNormalEl.textContent = formatMoney(normalTotalCents);
@@ -115,18 +123,66 @@
       picker.hidden = false;
       var input = picker.querySelector('[data-combo-picker-input]');
       var results = picker.querySelector('[data-combo-picker-results]');
-      results.innerHTML = '<p class="combo-picker__hint">Escribe para buscar productos.</p>';
       input.value = '';
+      if (pool) {
+        renderResultRows(results, pool);
+      } else {
+        results.innerHTML = '<p class="combo-picker__hint">Escribe para buscar productos.</p>';
+      }
       setTimeout(function () { input.focus(); }, 50);
     }
 
     function closePicker() { picker.hidden = true; }
+
+    function renderResultRows(results, products) {
+      if (!products.length) {
+        results.innerHTML = '<p class="combo-picker__hint">Sin resultados.</p>';
+        return;
+      }
+      results.innerHTML = '';
+      products.forEach(function (p) {
+        if (p.available === false) return;
+        // El pool (colección curada) trae precio numérico en centavos; la Search API
+        // ya entrega el precio formateado como texto — cada uno se muestra a su modo.
+        var priceLabel = typeof p.price === 'number' ? formatMoney(Math.round(p.price)) : p.price;
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'combo-picker__result';
+        row.innerHTML =
+          (p.image ? '<img src="' + p.image + '" alt="">' : '<span class="combo-picker__result-img-placeholder"></span>') +
+          '<span class="combo-picker__result-info">' +
+            '<span class="combo-picker__result-title">' + p.title + '</span>' +
+            '<span class="combo-picker__result-price">' + priceLabel + '</span>' +
+          '</span>';
+        row.addEventListener('click', function () {
+          closePicker();
+          handleProductPicked(p.handle);
+        });
+        results.appendChild(row);
+      });
+      if (!results.children.length) {
+        results.innerHTML = '<p class="combo-picker__hint">Sin resultados.</p>';
+      }
+    }
 
     var searchTimeout;
     function setupPickerSearch() {
       var input = picker.querySelector('[data-combo-picker-input]');
       var results = picker.querySelector('[data-combo-picker-results]');
 
+      // Modo pool: la lista ya está en memoria (colección curada), se filtra localmente.
+      if (pool) {
+        input.addEventListener('input', function () {
+          var q = input.value.trim().toLowerCase();
+          var filtered = q.length
+            ? pool.filter(function (p) { return p.title.toLowerCase().indexOf(q) !== -1; })
+            : pool;
+          renderResultRows(results, filtered);
+        });
+        return;
+      }
+
+      // Modo catálogo completo: búsqueda vía Search API.
       input.addEventListener('input', function () {
         clearTimeout(searchTimeout);
         var q = input.value.trim();
@@ -140,27 +196,7 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
               var products = (data.resources && data.resources.results && data.resources.results.products) || [];
-              if (!products.length) {
-                results.innerHTML = '<p class="combo-picker__hint">Sin resultados.</p>';
-                return;
-              }
-              results.innerHTML = '';
-              products.forEach(function (p) {
-                var row = document.createElement('button');
-                row.type = 'button';
-                row.className = 'combo-picker__result';
-                row.innerHTML =
-                  (p.image ? '<img src="' + p.image + '" alt="">' : '<span class="combo-picker__result-img-placeholder"></span>') +
-                  '<span class="combo-picker__result-info">' +
-                    '<span class="combo-picker__result-title">' + p.title + '</span>' +
-                    '<span class="combo-picker__result-price">' + p.price + '</span>' +
-                  '</span>';
-                row.addEventListener('click', function () {
-                  closePicker();
-                  handleProductPicked(p.handle);
-                });
-                results.appendChild(row);
-              });
+              renderResultRows(results, products);
             })
             .catch(function () {
               results.innerHTML = '<p class="combo-picker__hint">Error buscando productos.</p>';
@@ -272,29 +308,28 @@
     submitBtn.addEventListener('click', function () {
       if (submitBtn.disabled) return;
       var comboId = 'combo_' + Date.now();
-      var items = [{
-        id: parseInt(anchorVariantId, 10),
-        quantity: 1,
-        properties: {
-          '_combo_id': comboId,
-          '_combo_role': 'anchor',
-          '_combo_set_price': (setPriceCents / 100).toFixed(2)
-        }
-      }];
+      var baseProps = { '_combo_id': comboId, '_combo_set_price': (setPriceCents / 100).toFixed(2) };
+      if (comboMarker) baseProps['_combo'] = comboMarker;
+
+      var items = [];
+      if (!isStandalone) {
+        items.push({
+          id: parseInt(anchorVariantId, 10),
+          quantity: 1,
+          properties: Object.assign({ '_combo_role': 'anchor' }, baseProps)
+        });
+      }
       Object.keys(selections).forEach(function (idx) {
         items.push({
           id: parseInt(selections[idx].variantId, 10),
           quantity: 1,
-          properties: {
-            '_combo_id': comboId,
-            '_combo_role': 'extra'
-          }
+          properties: Object.assign({ '_combo_role': isStandalone ? 'member' : 'extra' }, baseProps)
         });
       });
 
       var origText = submitText.textContent;
       submitBtn.disabled = true;
-      submitText.textContent = 'Agregando...';
+      submitText.textContent = redirectToCheckout ? 'Preparando checkout...' : 'Agregando...';
 
       fetch('/cart/add.js', {
         method: 'POST',
@@ -303,8 +338,12 @@
       })
         .then(function (r) { if (!r.ok) throw new Error('fail'); return r.json(); })
         .then(function () {
-          submitText.textContent = 'Agregado ✓';
           document.dispatchEvent(new CustomEvent('cart:updated'));
+          if (redirectToCheckout) {
+            window.location.href = '/checkout';
+            return;
+          }
+          submitText.textContent = 'Agregado ✓';
           setTimeout(function () { submitText.textContent = origText; submitBtn.disabled = false; }, 1800);
         })
         .catch(function () {

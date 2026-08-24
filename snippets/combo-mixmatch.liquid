@@ -2,9 +2,17 @@
   ============================================
   Combo Widget — Mix and Match
   Renderiza el armador de combo a precio fijo.
-  Se configura como bloque de sección en el editor de temas
-  (DRIFT Product Stack → Agregar bloque → Combo — Mix & Match).
+
+  Modo "embedded" (default): bloque de sección dentro de un producto normal
+  (DRIFT Product Stack → Agregar bloque → Combo — Mix & Match). El producto
+  en el que vive el bloque ocupa el slot 0, bloqueado; el resto se elige.
   Uso: {% render 'combo-mixmatch', product: product, set_price: block.settings.set_price, set_qty: block.settings.set_qty, set_label: block.settings.set_label %}
+
+  Modo "standalone": producto ancla dedicado exclusivamente al combo (no se
+  agrega al carrito). Los set_qty slots están abiertos, opcionalmente
+  acotados a una colección (pool_collection), y al completar el set se
+  redirige directo a /checkout.
+  Uso: {% render 'combo-mixmatch', product: product, set_price: 300000, set_qty: 3, set_label: '...', mode: 'standalone', pool_collection: 'gorras', combo_marker: 'mixmatch-corona', redirect_checkout: true %}
   ============================================
 {% endcomment %}
 
@@ -13,12 +21,18 @@
   assign set_label = set_label | default: 'Arma tu combo'
   assign anchor_variant = product.selected_or_first_available_variant
   assign extra_slots = set_qty | minus: 1
+  assign mode = mode | default: 'embedded'
+  assign is_standalone = false
+  if mode == 'standalone'
+    assign is_standalone = true
+  endif
 -%}
 
 {%- if set_price != blank and set_price > 0 -%}
 <div
   class="combo-widget combo-widget--mixmatch drift-glass"
   data-combo-widget="mixmatch"
+  data-combo-mode="{{ mode }}"
   data-combo-set-price="{{ set_price | times: 100 | round }}"
   data-combo-set-qty="{{ set_qty }}"
   data-combo-anchor-id="{{ anchor_variant.id }}"
@@ -26,12 +40,18 @@
   data-combo-anchor-title="{{ product.title | escape }}"
   data-combo-anchor-image="{{ product.featured_image | image_url: width: 200 }}"
   data-combo-anchor-price="{{ anchor_variant.price }}"
+  {%- if combo_marker != blank %} data-combo-marker="{{ combo_marker }}"{% endif %}
+  {%- if redirect_checkout %} data-combo-redirect-checkout="true"{% endif %}
 >
   <div class="combo-widget__header">
     <span class="combo-widget__badge">Mix &amp; Match</span>
     <h3 class="combo-widget__title">{{ set_label }}</h3>
     <p class="combo-widget__subtitle">
-      Elige {{ extra_slots }} producto{% if extra_slots != 1 %}s{% endif %} más de cualquier parte de la tienda y llévate el combo completo por un precio fijo.
+      {%- if is_standalone -%}
+        Elige {{ set_qty }} gorras{% if pool_collection != blank %} de la colección{% else %} de cualquier parte de la tienda{% endif %} y llévate el set completo por un precio fijo.
+      {%- else -%}
+        Elige {{ extra_slots }} producto{% if extra_slots != 1 %}s{% endif %} más de cualquier parte de la tienda y llévate el combo completo por un precio fijo.
+      {%- endif -%}
     </p>
   </div>
 
@@ -40,34 +60,43 @@
       <div class="combo-widget__progress-fill" data-combo-progress-fill style="width: {{ 100 | divided_by: set_qty }}%"></div>
     </div>
     <span class="combo-widget__progress-text">
-      <span data-combo-progress-count>1</span> de {{ set_qty }} seleccionados
+      <span data-combo-progress-count>{% if is_standalone %}0{% else %}1{% endif %}</span> de {{ set_qty }} seleccionados
     </span>
   </div>
 
   <div class="combo-widget__slots" data-combo-slots>
-    {%- comment -%} Slot 0: producto ancla, siempre bloqueado {%- endcomment -%}
-    <div class="combo-slot combo-slot--locked" data-combo-slot="0" data-combo-filled="true">
-      <div class="combo-slot__thumb">
-        {%- if product.featured_image -%}
-          <img src="{{ product.featured_image | image_url: width: 160 }}" alt="{{ product.title | escape }}" width="80" height="80" loading="lazy">
-        {%- endif -%}
+    {%- unless is_standalone -%}
+      {%- comment -%} Slot 0: producto ancla, siempre bloqueado {%- endcomment -%}
+      <div class="combo-slot combo-slot--locked" data-combo-slot="0" data-combo-filled="true">
+        <div class="combo-slot__thumb">
+          {%- if product.featured_image -%}
+            <img src="{{ product.featured_image | image_url: width: 160 }}" alt="{{ product.title | escape }}" width="80" height="80" loading="lazy">
+          {%- endif -%}
+        </div>
+        <div class="combo-slot__info">
+          <span class="combo-slot__name">{{ product.title | escape }}</span>
+          <span class="combo-slot__tag">Este producto</span>
+        </div>
+        <span class="combo-slot__check">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
       </div>
-      <div class="combo-slot__info">
-        <span class="combo-slot__name">{{ product.title | escape }}</span>
-        <span class="combo-slot__tag">Este producto</span>
-      </div>
-      <span class="combo-slot__check">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </span>
-    </div>
+    {%- endunless -%}
 
-    {%- comment -%} Slots restantes: vacíos, se llenan con JS {%- endcomment -%}
-    {%- for i in (1..extra_slots) -%}
+    {%- comment -%} Slots restantes (o todos, en standalone): vacíos, se llenan con JS {%- endcomment -%}
+    {%- if is_standalone -%}
+      {%- assign slot_range_start = 0 -%}
+      {%- assign slot_range_end = set_qty | minus: 1 -%}
+    {%- else -%}
+      {%- assign slot_range_start = 1 -%}
+      {%- assign slot_range_end = extra_slots -%}
+    {%- endif -%}
+    {%- for i in (slot_range_start..slot_range_end) -%}
       <button type="button" class="combo-slot combo-slot--empty" data-combo-slot="{{ i }}" data-combo-filled="false">
         <span class="combo-slot__plus">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </span>
-        <span class="combo-slot__cta">Agregar producto {{ forloop.index | plus: 1 }}</span>
+        <span class="combo-slot__cta">Agregar producto {{ forloop.index }}</span>
       </button>
     {%- endfor -%}
   </div>
@@ -88,6 +117,27 @@
     <span data-combo-submit-text>Completa tu combo</span>
   </button>
 </div>
+
+{%- comment -%} ═══ POOL DE PRODUCTOS (solo standalone + pool_collection) ═══ {%- endcomment -%}
+{%- if is_standalone and pool_collection != blank -%}
+  {%- comment -%} pool_collection ya es el objeto colección (setting type: collection) {%- endcomment -%}
+  {%- assign pool = pool_collection -%}
+  <script type="application/json" data-combo-pool>
+    [
+      {%- for pool_product in pool.products -%}
+        {%- unless pool_product.id == product.id -%}
+          {
+            "handle": {{ pool_product.handle | json }},
+            "title": {{ pool_product.title | json }},
+            "image": {{ pool_product.featured_image | image_url: width: 160 | json }},
+            "price": {{ pool_product.price }},
+            "available": {{ pool_product.available | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {%- endunless -%}
+      {%- endfor -%}
+    ]
+  </script>
+{%- endif -%}
 
 {%- comment -%} ═══ PICKER MODAL (compartido, se posiciona por JS) ═══ {%- endcomment -%}
 <div class="combo-picker" data-combo-picker hidden>
