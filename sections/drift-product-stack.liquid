@@ -633,8 +633,8 @@
           "id": "combo_mode",
           "label": "Modo",
           "options": [
-            { "value": "embedded", "label": "Embebido (este producto cuenta como 1 pieza del set)" },
-            { "value": "standalone", "label": "Standalone (producto ancla dedicado, no se vende solo)" }
+            { "value": "embedded", "label": "Embebido (cuenta como 1 pieza)" },
+            { "value": "standalone", "label": "Standalone (producto ancla dedicado)" }
           ],
           "default": "embedded",
           "info": "Standalone: usa esto junto con 'Ocultar botón normal de Agregar al carrito' arriba, y con la plantilla product.mix-and-match."
@@ -661,20 +661,21 @@
         {
           "type": "collection",
           "id": "pool_collection",
-          "label": "Colección de productos elegibles (solo standalone)",
-          "info": "Restringe el selector a esta colección. Si se deja vacío, se busca en todo el catálogo."
+          "label": "Colección de productos elegibles",
+          "info": "Solo standalone. Restringe el selector a esta colección. Si se deja vacío, se busca en todo el catálogo."
         },
         {
           "type": "text",
           "id": "combo_marker",
-          "label": "Marca del combo (line item property _combo, solo standalone)",
+          "label": "Marca del combo (_combo)",
           "default": "mixmatch-corona",
-          "info": "Identifica los line items de este combo para que la Discount Function los detecte. Debe coincidir con el valor configurado en la función."
+          "info": "Solo standalone. Identifica los line items de este combo para que la Discount Function los detecte. Debe coincidir con el valor configurado en la función."
         },
         {
           "type": "checkbox",
           "id": "redirect_checkout",
-          "label": "Redirigir directo a checkout al completar (solo standalone)",
+          "label": "Redirigir a checkout al completar",
+          "info": "Solo standalone.",
           "default": true
         }
       ]
