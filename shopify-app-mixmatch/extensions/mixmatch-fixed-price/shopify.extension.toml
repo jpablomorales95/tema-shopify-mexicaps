@@ -12,5 +12,6 @@ description = "t:description"
   export = "cart-lines-discounts-generate-run"
 
   [extensions.build]
-  command = ""
-  path = "dist/function.wasm"
+  command = "npm exec -- shopify app function build"
+  path = "dist/index.wasm"
+  watch = ["src/**/*.js", "src/**/*.graphql"]
