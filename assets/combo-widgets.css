@@ -8,7 +8,7 @@
 :root {
   --combo-accent: #c0ff00;
   --combo-accent-text: #0A0A0A;
-  --combo-progress-fill: #22c55e;
+  --combo-progress-fill: var(--combo-accent);
 }
 
 .combo-widget {
@@ -75,8 +75,8 @@
   display: block !important;
   height: 100%;
   min-width: 8px;
-  background-color: #22c55e;
-  background: var(--combo-progress-fill, #22c55e);
+  background-color: #c0ff00;
+  background: var(--combo-progress-fill, #c0ff00);
   border-radius: var(--drift-radius-full, 999px);
   transition: width 0.35s ease;
 }
