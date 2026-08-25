@@ -69,8 +69,10 @@
   flex-shrink: 0;
 }
 
-.combo-widget__progress-fill {
-  display: block;
+.combo-widget__progress-track > .combo-widget__progress-fill {
+  /* Higher specificity than the theme's global `div:empty { display: none }`
+     reset — this bar is intentionally empty (color-only), not a stray block. */
+  display: block !important;
   height: 100%;
   min-width: 8px;
   background-color: #22c55e;
