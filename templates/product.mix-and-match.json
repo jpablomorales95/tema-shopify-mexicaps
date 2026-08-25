@@ -13,6 +13,7 @@
             "set_qty": 3,
             "set_label": "Elige tus 3 gorras",
             "pool_collection": "gorras",
+            "pool_max_price": 200000,
             "combo_marker": "mixmatch-corona",
             "redirect_checkout": true
           }

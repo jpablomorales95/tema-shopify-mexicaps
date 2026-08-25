@@ -424,6 +424,7 @@
                   set_label: block.settings.set_label,
                   mode: block.settings.combo_mode,
                   pool_collection: block.settings.pool_collection,
+                  pool_max_price: block.settings.pool_max_price,
                   combo_marker: block.settings.combo_marker,
                   redirect_checkout: block.settings.redirect_checkout
                 %}
@@ -663,6 +664,13 @@
           "id": "pool_collection",
           "label": "Colección de productos elegibles",
           "info": "Solo standalone. Restringe el selector a esta colección. Si se deja vacío, se busca en todo el catálogo."
+        },
+        {
+          "type": "number",
+          "id": "pool_max_price",
+          "label": "Precio máximo elegible",
+          "default": 200000,
+          "info": "Solo standalone + colección. Excluye del selector cualquier producto de la colección por encima de este precio (ej. mochilas, accesorios caros). Poné 0 para no filtrar."
         },
         {
           "type": "text",

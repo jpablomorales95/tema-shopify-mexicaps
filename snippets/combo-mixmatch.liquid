@@ -12,7 +12,10 @@
   agrega al carrito). Los set_qty slots están abiertos, opcionalmente
   acotados a una colección (pool_collection), y al completar el set se
   redirige directo a /checkout.
-  Uso: {% render 'combo-mixmatch', product: product, set_price: 300000, set_qty: 3, set_label: '...', mode: 'standalone', pool_collection: 'gorras', combo_marker: 'mixmatch-corona', redirect_checkout: true %}
+  pool_max_price (opcional, en la unidad mayor de la moneda, ej. 200000 = $200.000)
+  excluye de la colección cualquier producto por encima de ese precio, para que
+  no se puedan elegir artículos caros ajenos al combo (ej. mochilas, accesorios).
+  Uso: {% render 'combo-mixmatch', product: product, set_price: 300000, set_qty: 3, set_label: '...', mode: 'standalone', pool_collection: 'gorras', pool_max_price: 200000, combo_marker: 'mixmatch-corona', redirect_checkout: true %}
   ============================================
 {% endcomment %}
 
@@ -122,20 +125,29 @@
 {%- if is_standalone and pool_collection != blank -%}
   {%- comment -%} pool_collection ya es el objeto colección (setting type: collection) {%- endcomment -%}
   {%- assign pool = pool_collection -%}
+  {%- assign pool_max_price_cents = pool_max_price | default: 0 | times: 100 -%}
+  {%- assign pool_items = "" -%}
+  {%- for pool_product in pool.products -%}
+    {%- assign pool_price_excluded = false -%}
+    {%- if pool_max_price_cents > 0 and pool_product.price > pool_max_price_cents -%}
+      {%- assign pool_price_excluded = true -%}
+    {%- endif -%}
+    {%- unless pool_product.id == product.id or pool_price_excluded -%}
+      {%- capture pool_item -%}
+        {
+          "handle": {{ pool_product.handle | json }},
+          "title": {{ pool_product.title | json }},
+          "image": {{ pool_product.featured_image | image_url: width: 160 | json }},
+          "price": {{ pool_product.price }},
+          "available": {{ pool_product.available | json }}
+        }
+      {%- endcapture -%}
+      {%- assign pool_items = pool_items | append: pool_item | append: '|SEP|' -%}
+    {%- endunless -%}
+  {%- endfor -%}
+  {%- assign pool_items_list = pool_items | split: '|SEP|' -%}
   <script type="application/json" data-combo-pool>
-    [
-      {%- for pool_product in pool.products -%}
-        {%- unless pool_product.id == product.id -%}
-          {
-            "handle": {{ pool_product.handle | json }},
-            "title": {{ pool_product.title | json }},
-            "image": {{ pool_product.featured_image | image_url: width: 160 | json }},
-            "price": {{ pool_product.price }},
-            "available": {{ pool_product.available | json }}
-          }{% unless forloop.last %},{% endunless %}
-        {%- endunless -%}
-      {%- endfor -%}
-    ]
+    [{{ pool_items_list | join: ',' }}]
   </script>
 {%- endif -%}
 

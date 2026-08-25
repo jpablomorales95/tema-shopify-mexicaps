@@ -61,24 +61,30 @@
       var allFilled = filled >= setQty;
       submitBtn.disabled = !allFilled;
 
-      if (allFilled) {
-        var normalTotalCents = (isStandalone ? 0 : Math.round(anchorPrice)) + Object.keys(selections)
-          .reduce(function (sum, k) { return sum + Math.round(selections[k].price); }, 0);
+      var normalTotalCents = (isStandalone ? 0 : Math.round(anchorPrice)) + Object.keys(selections)
+        .reduce(function (sum, k) { return sum + Math.round(selections[k].price); }, 0);
+
+      if (filled > 0) {
         pricingBlock.hidden = false;
         priceNormalEl.textContent = formatMoney(normalTotalCents);
         priceFinalEl.textContent = formatMoney(setPriceCents);
-        var saveCents = normalTotalCents - setPriceCents;
-        if (saveCents > 0) {
-          priceSaveEl.hidden = false;
-          priceSaveEl.textContent = 'Ahorras ' + formatMoney(saveCents);
+        if (allFilled) {
+          var saveCents = normalTotalCents - setPriceCents;
+          if (saveCents > 0) {
+            priceSaveEl.hidden = false;
+            priceSaveEl.textContent = 'Ahorras ' + formatMoney(saveCents);
+          } else {
+            priceSaveEl.hidden = true;
+          }
         } else {
-          priceSaveEl.hidden = true;
+          priceSaveEl.hidden = false;
+          priceSaveEl.textContent = 'Llevas ' + formatMoney(normalTotalCents) + ' en precio normal';
         }
-        submitText.textContent = 'Agregar combo — ' + formatMoney(setPriceCents);
       } else {
         pricingBlock.hidden = true;
-        submitText.textContent = 'Completa tu combo';
       }
+
+      submitText.textContent = allFilled ? 'Agregar combo — ' + formatMoney(setPriceCents) : 'Completa tu combo';
     }
 
     function renderFilledSlot(slotEl, data) {
@@ -91,7 +97,10 @@
         '</div>' +
         '<div class="combo-slot__info">' +
           '<span class="combo-slot__name">' + data.title + '</span>' +
-          (data.variantLabel ? '<span class="combo-slot__variant">' + data.variantLabel + '</span>' : '') +
+          '<span class="combo-slot__variant">' +
+            formatMoney(Math.round(data.price)) +
+            (data.variantLabel ? ' · ' + data.variantLabel : '') +
+          '</span>' +
         '</div>' +
         '<button type="button" class="combo-slot__remove" data-combo-remove aria-label="Quitar">' +
           '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
@@ -273,7 +282,9 @@
     }
 
     function assignSelection(slotIdx, product, variant) {
-      var variantLabel = variant.options.filter(Boolean).join(' / ');
+      var variantLabel = variant.options.filter(function (opt) {
+        return opt && opt.toLowerCase() !== 'default title';
+      }).join(' / ');
       selections[slotIdx] = {
         variantId: variant.id,
         price: variant.price,
@@ -285,7 +296,8 @@
       renderFilledSlot(slotEl, {
         title: product.title,
         image: selections[slotIdx].image,
-        variantLabel: variantLabel !== product.title ? variantLabel : ''
+        price: variant.price,
+        variantLabel: variantLabel
       });
       updateProgress();
     }
