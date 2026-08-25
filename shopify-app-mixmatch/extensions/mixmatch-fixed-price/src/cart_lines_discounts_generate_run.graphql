@@ -1,4 +1,4 @@
-query CartLinesDiscountsGenerateRunInput {
+query CartInput {
   cart {
     lines {
       id

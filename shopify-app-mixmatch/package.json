@@ -9,5 +9,8 @@
   },
   "devDependencies": {
     "@shopify/cli": "^3.79.0"
+  },
+  "dependencies": {
+    "@shopify/shopify_function": "~2.0.0"
   }
 }

@@ -1,9 +1,10 @@
-api_version = "2026-01"
+api_version = "2026-07"
 
 [[extensions]]
 name = "t:name"
 handle = "mixmatch-fixed-price"
 type = "function"
+uid = "8af759ef-8388-b233-8904-11e8eb1f075c007dfd7c"
 description = "t:description"
 
   [[extensions.targeting]]
@@ -12,6 +13,5 @@ description = "t:description"
   export = "cart-lines-discounts-generate-run"
 
   [extensions.build]
-  command = "npm exec -- shopify app function build"
-  path = "dist/index.wasm"
-  watch = ["src/**/*.js", "src/**/*.graphql"]
+  command = ""
+  path = "dist/function.wasm"
