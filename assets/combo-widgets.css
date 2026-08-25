@@ -61,16 +61,20 @@
 }
 
 .combo-widget__progress-track {
-  height: 6px;
+  height: 8px;
   width: 100%;
-  background: var(--drift-border);
+  background: var(--drift-border, #e5e5e5);
   border-radius: var(--drift-radius-full, 999px);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .combo-widget__progress-fill {
+  display: block;
   height: 100%;
-  background: var(--combo-progress-fill);
+  min-width: 8px;
+  background-color: #22c55e;
+  background: var(--combo-progress-fill, #22c55e);
   border-radius: var(--drift-radius-full, 999px);
   transition: width 0.35s ease;
 }
