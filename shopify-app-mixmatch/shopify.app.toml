@@ -2,8 +2,8 @@
 
 name = "mix-and-match"
 client_id = "1a75cd13ea7819fd2c85b660e33dff10"
-application_url = "https://shopify.dev/apps/default-app-home"
-embedded = true
+application_url = "https://mexicaps.co"
+embedded = false
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -13,7 +13,7 @@ scopes = ""
 automatically_update_urls_on_dev = true
 
 [auth]
-redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
+redirect_urls = [ "https://mexicaps.co" ]
 
 [webhooks]
 api_version = "2026-10"
