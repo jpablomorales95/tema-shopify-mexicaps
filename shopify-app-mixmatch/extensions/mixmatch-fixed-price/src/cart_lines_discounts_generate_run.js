@@ -11,6 +11,11 @@ import {
 const COMBO_MARKER = 'mixmatch-corona';
 const REQUIRED_LINES = 3;
 const TARGET_PRICE = 300000;
+// Guardrail: any other block/widget in the theme that reuses this same
+// marker (by accident or by inheriting the schema default) must NOT be able
+// to combo an expensive item (e.g. a bag) down to TARGET_PRICE. Each line's
+// own price must look like a genuine "gorra", not just satisfy the count.
+const MAX_ELIGIBLE_LINE_PRICE = 175000;
 
 /**
   * @param {RunInput} input
@@ -44,6 +49,11 @@ export function cartLinesDiscountsGenerateRun(input) {
     if (lines.length !== REQUIRED_LINES || totalQty !== REQUIRED_LINES) {
       continue;
     }
+
+    const hasIneligibleLine = lines.some(
+      (line) => Number(line.cost.subtotalAmount.amount) > MAX_ELIGIBLE_LINE_PRICE,
+    );
+    if (hasIneligibleLine) continue;
 
     const originalTotal = lines.reduce(
       (sum, line) => sum + Number(line.cost.subtotalAmount.amount),
